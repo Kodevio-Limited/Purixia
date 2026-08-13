@@ -30,6 +30,7 @@ if _existing:
 CSRF_TRUSTED_ORIGINS = [
     'https://purixia.vercel.app',
     'https://purixia.kodevio.com',
+    'https://api.purixia.kodevio.com',
 ]
 
 # ── SSL Proxy ─────────────────────────────────────────────────────────────────

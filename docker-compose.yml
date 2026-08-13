@@ -1,19 +1,22 @@
 # Purixia BD - single deployment (frontend + backend) on Dokploy
 #
-# ONE global compose file deploys both services so they can talk to each
-# other on the same internal Docker network. Only the FRONTEND is exposed
-# publicly via Traefik at purixia.kodevio.com. The backend is internal.
+# ONE global compose file deploys both services. TWO public domains/DSNs:
+#
+#   FRONTEND  -> https://purixia.kodevio.com
+#   BACKEND   -> https://api.purixia.kodevio.com   (<-- change if you want a different subdomain)
 #
 # How it works:
-#   - frontend reaches the backend internally as "http://backend:8000"
-#     (BACKEND_URL build arg) and proxies /api and /media to it.
-#   - The browser only ever talks to https://purixia.kodevio.com ; the
-#     Next.js server forwards API/media traffic to the Django backend.
-#   - Both services join the "backend-net" (private). The frontend also
-#     joins the shared "dokploy-network" so Traefik can route to it.
+#   - both services join the "dokploy-network" so Traefik routes to them.
+#   - The backend is publicly reachable at api.purixia.kodevio.com, so you can
+#     open /api/catalog/products directly in the browser.
+#   - The frontend (storefront) also talks to the backend internally over the
+#     private "backend-net" (http://backend:8000) to avoid cross-origin issues;
+#     its public domain is purixia.kodevio.com.
 #
 # Before deploying:
-#   1. Point purixia.kodevio.com DNS A record to your server.
+#   1. Point BOTH DNS A records to your server:
+#        purixia.kodevio.com   -> server IP
+#        api.purixia.kodevio.com -> server IP
 #   2. Ensure this project directory is pushed to your git repo.
 #   3. Deploy this file as a "Docker Compose" service in Dokploy.
 
@@ -34,6 +37,14 @@ services:
       - sqlite_data:/app/sqlite
     networks:
       - backend-net
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.purixia-backend.rule=Host(`api.purixia.kodevio.com`)
+      - traefik.http.routers.purixia-backend.entrypoints=websecure
+      - traefik.http.routers.purixia-backend.tls.certResolver=letsencrypt
+      - traefik.docker.network=dokploy-network
+      - traefik.http.services.purixia-backend.loadbalancer.server.port=8000
 
   frontend:
     build:
