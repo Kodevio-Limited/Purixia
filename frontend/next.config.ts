@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
         source: '/media/:path*',
         destination: `${BACKEND_URL}/media/:path*`,
       },
+      {
+        source: '/admin/:path*',
+        destination: `${BACKEND_URL}/admin/:path*`,
+      },
+      {
+        source: '/static/:path*',
+        destination: `${BACKEND_URL}/static/:path*`,
+      },
     ];
   },
   images: {
