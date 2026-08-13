@@ -9,7 +9,7 @@ class BannerAdmin(admin.ModelAdmin):
     list_filter = ('is_active',)
     list_editable = ('order',)
     search_fields = ('title',)
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('created_at',)
 
     fieldsets = (
         ('Banner Content', {
@@ -19,7 +19,7 @@ class BannerAdmin(admin.ModelAdmin):
             'fields': ('order', 'is_active')
         }),
         ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
+            'fields': ('created_at',),
             'classes': ('collapse',)
         }),
     )
