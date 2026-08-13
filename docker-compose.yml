@@ -7,11 +7,11 @@
 #
 # How it works:
 #   - both services join the "dokploy-network" so Traefik routes to them.
-#   - The backend is publicly reachable at api.purixia.kodevio.com, so you can
-#     open /api/catalog/products directly in the browser.
-#   - The frontend (storefront) also talks to the backend internally over the
-#     private "backend-net" (http://backend:8000) to avoid cross-origin issues;
-#     its public domain is purixia.kodevio.com.
+#   - The backend is publicly reachable at purixiabackend.kodevio.com. Open
+#     /api/catalog/products directly in the browser to see all products.
+#   - The frontend (storefront) at purixia.kodevio.com calls the backend
+#     DIRECTLY at https://purixiabackend.kodevio.com (no reverse proxy).
+#     Django CORS allows cross-origin requests from the frontend domain.
 #
 # Before deploying:
 #   1. Make sure a DNS record resolves to your server for each domain:
@@ -53,8 +53,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        BACKEND_URL: http://backend:8000
-        NEXT_PUBLIC_API_URL: https://purixia.kodevio.com
+        NEXT_PUBLIC_API_URL: https://purixiabackend.kodevio.com
     container_name: purixia_frontend
     restart: unless-stopped
     environment:
