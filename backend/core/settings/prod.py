@@ -5,11 +5,6 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
-# Behind a Next.js reverse proxy: Next.js strips trailing slashes, while
-# Django's default APPEND_SLASH re-adds them -> infinite redirect loop.
-# Disable it so /api/... and /api/.../ both resolve directly.
-APPEND_SLASH = False
-
 # ── Database: SQLite (Keeping it built-in as requested) ────────────────────────
 import os
 DATABASE_PATH = config('SQLITE_DB_PATH', default=str(BASE_DIR / 'db.sqlite3'))

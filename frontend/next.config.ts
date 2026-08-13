@@ -6,6 +6,10 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Next.js would otherwise 308-redirect `/api/.../` -> `/api/...`, which
+  // flips against Django's resolver and breaks proxied requests. Keep the
+  // path as-is so rewrites forward the trailing slash to the backend.
+  skipTrailingSlashRedirect: true,
   async rewrites() {
     return [
       {
