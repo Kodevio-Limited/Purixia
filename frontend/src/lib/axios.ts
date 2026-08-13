@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_API = 'https://purixia.kodevio.com';
+const BASE_API = 'https://purixiabackend.kodevio.com';
 
 const api = axios.create({
   baseURL: BASE_API,

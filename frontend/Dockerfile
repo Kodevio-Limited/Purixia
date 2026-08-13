@@ -7,9 +7,7 @@ RUN npm ci
 # ---- Builder ----
 FROM node:22-alpine AS builder
 WORKDIR /app
-ARG BACKEND_URL=http://127.0.0.1:8000
-ARG NEXT_PUBLIC_API_URL=https://purixia.kodevio.com
-ENV BACKEND_URL=$BACKEND_URL
+ARG NEXT_PUBLIC_API_URL=https://purixiabackend.kodevio.com
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
