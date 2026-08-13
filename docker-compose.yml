@@ -3,7 +3,7 @@
 # ONE global compose file deploys both services. TWO public domains/DSNs:
 #
 #   FRONTEND  -> https://purixia.kodevio.com
-#   BACKEND   -> https://api.purixia.kodevio.com   (<-- change if you want a different subdomain)
+#   BACKEND   -> https://purixiabackend.kodevio.com   (<-- change if you want a different subdomain)
 #
 # How it works:
 #   - both services join the "dokploy-network" so Traefik routes to them.
@@ -14,9 +14,11 @@
 #     its public domain is purixia.kodevio.com.
 #
 # Before deploying:
-#   1. Point BOTH DNS A records to your server:
-#        purixia.kodevio.com   -> server IP
-#        api.purixia.kodevio.com -> server IP
+#   1. Make sure a DNS record resolves to your server for each domain:
+#        purixia.kodevio.com     -> server IP
+#        purixiabackend.kodevio.com -> server IP
+#      (If *.kodevio.com is already a wildcard pointing at the server, no DNS
+#       change is needed - the compose labels below handle routing + the cert.)
 #   2. Ensure this project directory is pushed to your git repo.
 #   3. Deploy this file as a "Docker Compose" service in Dokploy.
 
@@ -40,7 +42,7 @@ services:
       - dokploy-network
     labels:
       - traefik.enable=true
-      - traefik.http.routers.purixia-backend.rule=Host(`api.purixia.kodevio.com`)
+      - traefik.http.routers.purixia-backend.rule=Host(`purixiabackend.kodevio.com`)
       - traefik.http.routers.purixia-backend.entrypoints=websecure
       - traefik.http.routers.purixia-backend.tls.certResolver=letsencrypt
       - traefik.docker.network=dokploy-network
