@@ -8,7 +8,6 @@ env
 .gitignore
 logs/
 staticfiles/
-media/
 .dockerignore
 Dockerfile
 docker-compose.yml
