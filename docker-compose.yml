@@ -1,0 +1,68 @@
+# Purixia BD - single deployment (frontend + backend) on Dokploy
+#
+# ONE global compose file deploys both services so they can talk to each
+# other on the same internal Docker network. Only the FRONTEND is exposed
+# publicly via Traefik at purixia.kodevio.com. The backend is internal.
+#
+# How it works:
+#   - frontend reaches the backend internally as "http://backend:8000"
+#     (BACKEND_URL build arg) and proxies /api and /media to it.
+#   - The browser only ever talks to https://purixia.kodevio.com ; the
+#     Next.js server forwards API/media traffic to the Django backend.
+#   - Both services join the "backend-net" (private). The frontend also
+#     joins the shared "dokploy-network" so Traefik can route to it.
+#
+# Before deploying:
+#   1. Point purixia.kodevio.com DNS A record to your server.
+#   2. Ensure this project directory is pushed to your git repo.
+#   3. Deploy this file as a "Docker Compose" service in Dokploy.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: purixia_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings.prod
+      # Persist the SQLite DB on a named volume so orders/users survive redeploys
+      SQLITE_DB_PATH: /app/sqlite/db.sqlite3
+    volumes:
+      - sqlite_data:/app/sqlite
+    networks:
+      - backend-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BACKEND_URL: http://backend:8000
+        NEXT_PUBLIC_API_URL: https://purixia.kodevio.com
+    container_name: purixia_frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - backend-net
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.purixia-frontend.rule=Host(`purixia.kodevio.com`)
+      - traefik.http.routers.purixia-frontend.entrypoints=websecure
+      - traefik.http.routers.purixia-frontend.tls.certResolver=letsencrypt
+      - traefik.docker.network=dokploy-network
+      - traefik.http.services.purixia-frontend.loadbalancer.server.port=3000
+
+volumes:
+  sqlite_data:
+
+networks:
+  backend-net:
+  dokploy-network:
+    external: true

@@ -6,7 +6,6 @@ env
 .env
 .git
 .gitignore
-db.sqlite3
 logs/
 staticfiles/
 media/

@@ -6,10 +6,14 @@ DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 # ── Database: SQLite (Keeping it built-in as requested) ────────────────────────
+import os
+DATABASE_PATH = config('SQLITE_DB_PATH', default=str(BASE_DIR / 'db.sqlite3'))
+os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DATABASE_PATH,
     }
 }
 
@@ -25,6 +29,7 @@ if _existing:
 # ── CSRF ──────────────────────────────────────────────────────────────────────
 CSRF_TRUSTED_ORIGINS = [
     'https://purixia.vercel.app',
+    'https://purixia.kodevio.com',
     'https://purixia.kodevio.com',
 ]
 
