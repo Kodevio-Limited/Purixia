@@ -7,11 +7,18 @@
 #
 # How it works:
 #   - both services join the "dokploy-network" so Traefik routes to them.
+<<<<<<< HEAD
 #   - The backend is publicly reachable at admin.purixiabd.com.
 #     Visit admin.purixiabd.com/admin/ for the Django admin panel.
 #     Visiting admin.purixiabd.com (bare) redirects to /admin/ automatically.
 #   - The frontend (storefront) at purixiabd.com calls the backend
 #     DIRECTLY at https://admin.purixiabd.com (no reverse proxy).
+=======
+#   - The backend is publicly reachable at purixiabackend.kodevio.com. Open
+#     /api/catalog/products directly in the browser to see all products.
+#   - The frontend (storefront) at purixia.kodevio.com calls the backend
+#     DIRECTLY at https://purixiabackend.kodevio.com (no reverse proxy).
+>>>>>>> ba99ae9e83e8ea825f7891da5060e19c0bd0e0a1
 #     Django CORS allows cross-origin requests from the frontend domain.
 #
 # Before deploying:
@@ -53,7 +60,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
+<<<<<<< HEAD
         NEXT_PUBLIC_API_URL: https://admin.purixiabd.com
+=======
+        NEXT_PUBLIC_API_URL: https://purixiabackend.kodevio.com
+>>>>>>> ba99ae9e83e8ea825f7891da5060e19c0bd0e0a1
     container_name: purixia_frontend
     restart: unless-stopped
     environment:
