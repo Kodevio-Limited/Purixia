@@ -2,9 +2,12 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 from django.views.static import serve
 
 urlpatterns = [
+    # Bare root (e.g. admin.purixiabd.com) redirects straight into the admin panel
+    path('', RedirectView.as_view(url='/admin/', permanent=False)),
     path('admin/', admin.site.urls),
     path('api/auth/',    include('apps.users.urls')),
     path('api/catalog/', include('apps.catalog.urls')),

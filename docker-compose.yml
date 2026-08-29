@@ -1,24 +1,24 @@
 # Purixia BD - single deployment (frontend + backend) on Dokploy
 #
-# ONE global compose file deploys both services. TWO public domains/DSNs:
+# ONE global compose file deploys both services. TWO public domains:
 #
-#   FRONTEND  -> https://purixia.kodevio.com
-#   BACKEND   -> https://purixiabackend.kodevio.com   (<-- change if you want a different subdomain)
+#   FRONTEND  -> https://purixiabd.com  (also www.purixiabd.com)
+#   BACKEND   -> https://admin.purixiabd.com
 #
 # How it works:
 #   - both services join the "dokploy-network" so Traefik routes to them.
-#   - The backend is publicly reachable at purixiabackend.kodevio.com. Open
-#     /api/catalog/products directly in the browser to see all products.
-#   - The frontend (storefront) at purixia.kodevio.com calls the backend
-#     DIRECTLY at https://purixiabackend.kodevio.com (no reverse proxy).
+#   - The backend is publicly reachable at admin.purixiabd.com.
+#     Visit admin.purixiabd.com/admin/ for the Django admin panel.
+#     Visiting admin.purixiabd.com (bare) redirects to /admin/ automatically.
+#   - The frontend (storefront) at purixiabd.com calls the backend
+#     DIRECTLY at https://admin.purixiabd.com (no reverse proxy).
 #     Django CORS allows cross-origin requests from the frontend domain.
 #
 # Before deploying:
-#   1. Make sure a DNS record resolves to your server for each domain:
-#        purixia.kodevio.com     -> server IP
-#        purixiabackend.kodevio.com -> server IP
-#      (If *.kodevio.com is already a wildcard pointing at the server, no DNS
-#       change is needed - the compose labels below handle routing + the cert.)
+#   1. DNS A records on purixiabd.com pointing to your server IP:
+#        @     -> server IP
+#        www   -> server IP
+#        admin -> server IP
 #   2. Ensure this project directory is pushed to your git repo.
 #   3. Deploy this file as a "Docker Compose" service in Dokploy.
 
@@ -42,7 +42,7 @@ services:
       - dokploy-network
     labels:
       - traefik.enable=true
-      - traefik.http.routers.purixia-backend.rule=Host(`purixiabackend.kodevio.com`)
+      - traefik.http.routers.purixia-backend.rule=Host(`admin.purixiabd.com`)
       - traefik.http.routers.purixia-backend.entrypoints=websecure
       - traefik.http.routers.purixia-backend.tls.certResolver=letsencrypt
       - traefik.docker.network=dokploy-network
@@ -53,7 +53,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: https://purixiabackend.kodevio.com
+        NEXT_PUBLIC_API_URL: https://admin.purixiabd.com
     container_name: purixia_frontend
     restart: unless-stopped
     environment:
@@ -65,7 +65,7 @@ services:
       - dokploy-network
     labels:
       - traefik.enable=true
-      - traefik.http.routers.purixia-frontend.rule=Host(`purixia.kodevio.com`)
+      - traefik.http.routers.purixia-frontend.rule=Host(`purixiabd.com`) || Host(`www.purixiabd.com`)
       - traefik.http.routers.purixia-frontend.entrypoints=websecure
       - traefik.http.routers.purixia-frontend.tls.certResolver=letsencrypt
       - traefik.docker.network=dokploy-network

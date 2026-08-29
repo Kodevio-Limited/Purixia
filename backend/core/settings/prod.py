@@ -28,6 +28,10 @@ if _existing:
 
 # ── CSRF ──────────────────────────────────────────────────────────────────────
 CSRF_TRUSTED_ORIGINS = [
+    'https://purixiabd.com',
+    'https://www.purixiabd.com',
+    'https://admin.purixiabd.com',
+    # legacy kodevio domains — remove after cutover is confirmed
     'https://purixia.vercel.app',
     'https://purixia.kodevio.com',
     'https://purixiabackend.kodevio.com',
