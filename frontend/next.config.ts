@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'purixiabackend.kodevio.com',
+        hostname: 'admin.purixiabd.com',
         pathname: '/**',
       },
       {

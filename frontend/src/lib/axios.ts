@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_API = 'https://purixiabackend.kodevio.com';
+const BASE_API = process.env.NEXT_PUBLIC_API_URL || 'https://admin.purixiabd.com';
 
 const api = axios.create({
   baseURL: BASE_API,
