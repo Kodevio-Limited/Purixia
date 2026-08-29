@@ -215,11 +215,11 @@ export function Navbar() {
           </div>
 
           {/* Main Links */}
-          <div className="ml-3 md:ml-[24px] flex items-center gap-3 md:gap-[24px]">
+          <div className="ml-3 md:ml-[24px] flex items-center gap-1 md:gap-[8px]">
             <Link
               href="/"
               className={cn(
-                "text-[13px] md:text-[15px] font-medium font-poppins whitespace-nowrap",
+                "px-3 md:px-4 py-1.5 rounded text-[13px] md:text-[15px] font-medium font-poppins whitespace-nowrap transition-colors",
                 pathname === "/" ? "text-[#F4B227]" : "text-[#2A2A2A] hover:text-[#F4B227]"
               )}
             >
@@ -227,7 +227,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/"
-              className="text-[13px] md:text-[15px] font-medium font-poppins text-[#2A2A2A] hover:text-[#F4B227] whitespace-nowrap"
+              className="px-3 md:px-4 py-1.5 rounded text-[13px] md:text-[15px] font-medium font-poppins text-[#2A2A2A] hover:text-[#F4B227] whitespace-nowrap transition-colors"
             >
               Offers
             </Link>
