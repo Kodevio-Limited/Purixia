@@ -29,6 +29,9 @@ fi
 echo ">> Running migrations"
 python manage.py migrate --noinput --settings=core.settings.prod
 
+echo ">> Ensuring admin superuser exists"
+python manage.py ensure_admin --settings=core.settings.prod 2>/dev/null || true
+
 echo ">> Collecting static files"
 python manage.py collectstatic --noinput --settings=core.settings.prod 2>/dev/null || true
 
