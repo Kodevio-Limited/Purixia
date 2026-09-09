@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen flex flex-col bg-gray-50/50 text-gray-900 antialiased font-poppins">
         <Providers>
           <Navbar />
-          <div className="flex-1">{children}</div>
+          <main className="flex-1">{children}</main>
           <Footer />
         </Providers>
       </body>

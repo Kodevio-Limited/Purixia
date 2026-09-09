@@ -30,7 +30,7 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-white">
       {/* Hero Banner Section */}
       <section className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[10px]">
-        <div className="max-w-[1440px] mx-auto relative h-[360px] bg-[#D89500] rounded-[20px] overflow-hidden shadow-sm">
+        <div className="max-w-[1440px] mx-auto relative h-[200px] sm:h-[280px] md:h-[360px] bg-[#D89500] rounded-[20px] overflow-hidden shadow-sm">
           {banners && banners.length > 0 ? (
             <div className="relative w-full h-full">
               {banners.map((banner, index) => (
@@ -63,16 +63,22 @@ export default function HomePage() {
               
               {/* Banner Pagination Dots */}
               {banners.length > 1 && (
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-20" role="group" aria-label="Banner navigation">
                   {banners.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setCurrentBanner(i)}
+                      aria-label={`Go to slide ${i + 1}`}
+                      aria-current={i === currentBanner ? 'true' : undefined}
                       className={cn(
-                        "w-2 h-2 rounded-full transition-all",
-                        i === currentBanner ? "bg-[#F4B227] w-6" : "bg-white/50"
+                        "min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all",
                       )}
-                    />
+                    >
+                      <span className={cn(
+                        "block rounded-full transition-all",
+                        i === currentBanner ? "bg-[#F4B227] w-4 h-2" : "bg-white/50 w-2 h-2"
+                      )} />
+                    </button>
                   ))}
                 </div>
               )}

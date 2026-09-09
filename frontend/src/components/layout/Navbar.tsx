@@ -74,7 +74,7 @@ export function Navbar() {
               placeholder="Search product..."
               className="w-full h-full bg-[#1A1A1A] border border-[#F4B227]/30 rounded-[30px] px-[16px] text-white text-[13px] font-poppins focus:outline-none focus:border-[#F4B227] transition-all"
             />
-            <button className="absolute right-0 top-0 w-[50px] h-[36px] bg-[#F4B227] border border-[#F4B227] rounded-r-[30px] flex items-center justify-center hover:bg-[#D89500] transition-colors">
+            <button aria-label="Search" className="absolute right-0 top-0 w-[50px] h-[36px] bg-[#F4B227] border border-[#F4B227] rounded-r-[30px] flex items-center justify-center hover:bg-[#D89500] transition-colors">
               <Search className="w-4 h-4 text-white" />
             </button>
           </div>
@@ -82,6 +82,7 @@ export function Navbar() {
           {/* Search Icon - Mobile */}
           <button
             onClick={() => setSearchOpen(!searchOpen)}
+            aria-label="Search"
             className="md:hidden w-[36px] h-[36px] border border-[#F4B227] rounded-[18px] flex items-center justify-center text-[#F4B227] hover:bg-[#F4B227]/10 transition-colors"
           >
             <Search className="w-5 h-5" />
@@ -93,6 +94,7 @@ export function Navbar() {
             <div ref={profileRef} className="relative">
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
+                aria-label="Account"
                 className="w-[36px] h-[36px] border border-[#F4B227] rounded-[18px] flex items-center justify-center text-[#F4B227] hover:bg-[#F4B227]/10 transition-colors"
               >
                 <User className="w-5 h-5" />
@@ -151,6 +153,7 @@ export function Navbar() {
             {/* Cart */}
             <button
               onClick={toggleDrawer}
+              aria-label="Shopping cart"
               className="relative w-[36px] h-[36px] border border-[#F4B227] rounded-[18px] flex items-center justify-center text-[#F4B227] hover:bg-[#F4B227]/10 transition-colors"
             >
               <ShoppingCart className="w-5 h-5" />
@@ -173,7 +176,7 @@ export function Navbar() {
               placeholder="Search product..."
               className="w-full h-full bg-[#1A1A1A] border border-[#F4B227]/30 rounded-[30px] px-[16px] text-white text-[13px] font-poppins focus:outline-none focus:border-[#F4B227] transition-all"
             />
-            <button className="absolute right-0 top-0 w-[50px] h-[36px] bg-[#F4B227] border border-[#F4B227] rounded-r-[30px] flex items-center justify-center hover:bg-[#D89500] transition-colors">
+            <button aria-label="Search" className="absolute right-0 top-0 w-[50px] h-[36px] bg-[#F4B227] border border-[#F4B227] rounded-r-[30px] flex items-center justify-center hover:bg-[#D89500] transition-colors">
               <Search className="w-4 h-4 text-white" />
             </button>
           </div>
@@ -188,6 +191,8 @@ export function Navbar() {
             <button
               onMouseEnter={() => setIsCategoriesOpen(true)}
               onMouseLeave={() => setIsCategoriesOpen(false)}
+              aria-expanded={isCategoriesOpen}
+              aria-label="Categories"
               className="w-[140px] md:w-[180px] h-[40px] bg-[#F4B227] rounded-t-[5px] flex items-center px-[12px] gap-[8px] text-white font-bold text-[12px] md:text-[14px] font-poppins"
             >
               Categories

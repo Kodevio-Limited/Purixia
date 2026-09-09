@@ -44,9 +44,9 @@ export function Footer() {
         <div className="col-span-1">
           <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">Support</h3>
           <ul className="space-y-3">
-            <li><span className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Privacy Policy</span></li>
-            <li><span className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Terms & Condition</span></li>
-            <li><span className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Help Center</span></li>
+            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Privacy Policy</span></li>
+            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Terms & Condition</span></li>
+            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Help Center</span></li>
           </ul>
         </div>
       </div>
@@ -56,10 +56,10 @@ export function Footer() {
           © 2026 Purixia BD. All rights reserved.
         </p>
         <div className="flex items-center gap-6">
-          <Link href="#" className="text-black hover:text-[#F4B227] transition-colors">
+          <Link href="#" aria-label="Share" className="text-black hover:text-[#F4B227] transition-colors">
             <Share2 className="w-5 h-5" />
           </Link>
-          <Link href="#" className="text-black hover:text-[#F4B227] transition-colors">
+          <Link href="#" aria-label="Visit us" className="text-black hover:text-[#F4B227] transition-colors">
             <ExternalLink className="w-5 h-5" />
           </Link>
         </div>
