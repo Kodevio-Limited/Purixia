@@ -10,7 +10,7 @@ interface AuthState {
   setUser: (user: User | null) => void;
   clearUser: () => void;
   initAuth: () => Promise<void>;
-  login: (username: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<User>;
   register: (data: any) => Promise<User>;
   logout: () => Promise<void>;
 }
@@ -41,10 +41,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: false });
   },
 
-  login: async (username, password) => {
+  login: async (email, password) => {
     set({ loading: true });
     try {
-      const response = await authService.login({ username, password });
+      const response = await authService.login({ email, password });
       saveTokens(response.tokens);
       set({ user: response.user, loading: false });
       

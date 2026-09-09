@@ -33,7 +33,7 @@ export function useLogin() {
   const login = useAuthStore((state) => state.login);
   
   return useMutation({
-    mutationFn: (variables: { username: string; password: string }) => 
-      login(variables.username, variables.password),
+    mutationFn: (variables: { email: string; password: string }) => 
+      login(variables.email, variables.password),
   });
 }

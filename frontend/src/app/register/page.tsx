@@ -11,7 +11,7 @@ import { useCartStore } from '../../stores/cartStore';
 import toast from 'react-hot-toast';
 
 const registerSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
+  username: z.string().optional(),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(10, 'Phone number is too short').max(15, 'Phone number is too long'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -85,7 +85,7 @@ function RegisterForm() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-black">Username</label>
+              <label className="text-[13px] font-semibold text-black">Username (optional)</label>
               <input
                 {...register('username')}
                 placeholder="Enter your username"

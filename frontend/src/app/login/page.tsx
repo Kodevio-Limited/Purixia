@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 import { Suspense } from 'react';
 
 const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
+  email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -41,7 +41,7 @@ function LoginContent() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
     },
   });
@@ -69,13 +69,14 @@ function LoginContent() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-black">Username</label>
+              <label className="text-[13px] font-semibold text-black">Email</label>
               <input
-                {...register('username')}
-                placeholder="Enter your username"
+                type="email"
+                {...register('email')}
+                placeholder="Enter your email"
                 className="w-full h-[44px] px-4 bg-white border border-gray-100 rounded-[8px] text-[13px] focus:outline-none focus:border-[#F4B227] transition-colors"
               />
-              {errors.username && <p className="text-xs text-red-500">{errors.username.message}</p>}
+              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-1.5">

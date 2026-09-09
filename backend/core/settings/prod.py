@@ -1,9 +1,9 @@
 from .base import *  # noqa
-from decouple import config
+from decouple import config, Csv
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
 
 # ── Database: SQLite (Keeping it built-in as requested) ────────────────────────
 import os
@@ -27,15 +27,7 @@ if _existing:
     CORS_ALLOWED_ORIGINS = _existing
 
 # ── CSRF ──────────────────────────────────────────────────────────────────────
-CSRF_TRUSTED_ORIGINS = [
-    'https://purixiabd.com',
-    'https://www.purixiabd.com',
-    'https://admin.purixiabd.com',
-    # legacy kodevio domains — remove after cutover is confirmed
-    'https://purixia.vercel.app',
-    'https://purixia.kodevio.com',
-    'https://purixiabackend.kodevio.com',
-]
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
 
 # ── SSL Proxy ─────────────────────────────────────────────────────────────────
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
