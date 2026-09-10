@@ -23,6 +23,11 @@ COPY . /app/
 # Create directory for logs and static files
 RUN mkdir -p /app/logs /app/staticfiles /app/media
 
+# Snapshot shipped product/banner images so the entrypoint can seed them
+# into the persistent media volume on first boot (volume mounts would
+# otherwise hide the files copied into /app/media above).
+RUN mkdir -p /app/media_seed && cp -a /app/media/. /app/media_seed/ 2>/dev/null || true
+
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
 

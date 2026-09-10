@@ -1,19 +1,35 @@
 from .base import *  # noqa
 from decouple import config, Csv
+from django.core.exceptions import ImproperlyConfigured
 
 DEBUG = False
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
 
-# ── Database: SQLite (Keeping it built-in as requested) ────────────────────────
-import os
-DATABASE_PATH = config('SQLITE_DB_PATH', default=str(BASE_DIR / 'db.sqlite3'))
-os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
+# ── Database: PostgreSQL (required in production) ────────────────────────────
+# Single source of truth for credentials: POSTGRES_* vars (set once in Dokploy).
+# DB_* fall back to the POSTGRES_* values so the app and the db service agree.
+DB_NAME = config('DB_NAME', default=config('POSTGRES_DB', default='purixia'))
+DB_USER = config('DB_USER', default=config('POSTGRES_USER', default='purixia'))
+DB_PASSWORD = config('DB_PASSWORD', default=config('POSTGRES_PASSWORD', default=''))
+DB_HOST = config('DB_HOST', default='db')
+DB_PORT = config('DB_PORT', default='5432')
+if not DB_PASSWORD:
+    raise ImproperlyConfigured(
+        'DB_PASSWORD (or POSTGRES_PASSWORD) must be set in production.'
+    )
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DATABASE_PATH,
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+        'CONN_MAX_AGE': 600,
+        'CONN_HEALTH_CHECKS': True,
+        'OPTIONS': {'connect_timeout': 10},
     }
 }
 

@@ -1,18 +1,34 @@
-# Purixia BD - single deployment (frontend + backend) on Dokploy
+# Purixia BD - single deployment (frontend + backend + postgres) on Dokploy
 #
-# ONE global compose file deploys both services. TWO public domains:
+# ONE global compose file deploys everything. TWO public domains:
 #
 #   FRONTEND  -> https://purixiabd.com  (also www.purixiabd.com)
 #   BACKEND   -> https://admin.purixiabd.com
 #
 # How it works:
-#   - both services join the "dokploy-network" so Traefik routes to them.
+#   - frontend/backend join "dokploy-network" so Traefik routes to them.
 #   - The backend is publicly reachable at admin.purixiabd.com.
 #     Visit admin.purixiabd.com/admin/ for the Django admin panel.
-#     Visiting admin.purixiabd.com (bare) redirects to /admin/ automatically.
-#   - The frontend (storefront) at purixiabd.com calls the backend
+#   - The frontend (storefront) calls the backend
 #     DIRECTLY at https://admin.purixiabd.com (no reverse proxy).
 #     Django CORS allows cross-origin requests from the frontend domain.
+#   - Postgres ("db" service) is INTERNAL ONLY (no Traefik labels).
+#     Data lives on the "postgres_data" named volume and survives redeploys.
+#   - Uploaded media lives on the "media_data" named volume and survives
+#     redeploys. Images shipped in the image seed the volume on first boot.
+#
+# Required env vars in Dokploy (compose service -> Environment):
+#   SECRET_KEY=<long random string>
+#   POSTGRES_PASSWORD=<strong db password>   (single source of DB credentials)
+#   ADMIN_USERNAME=<admin username>
+#   ADMIN_EMAIL=<admin email>
+#   ADMIN_PASSWORD=<admin password>
+#   ADMIN_RESET_PASSWORD=1                    (first boot only, then remove/0)
+#
+# Optional (defaults shown):
+#   POSTGRES_DB=purixia  POSTGRES_USER=purixia
+#   ALLOWED_HOSTS=purixiabd.com,www.purixiabd.com,admin.purixiabd.com
+#   CSRF_TRUSTED_ORIGINS=https://purixiabd.com,https://www.purixiabd.com,https://admin.purixiabd.com
 #
 # Before deploying:
 #   1. DNS A records on purixiabd.com pointing to your server IP:
@@ -21,8 +37,29 @@
 #        admin -> server IP
 #   2. Ensure this project directory is pushed to your git repo.
 #   3. Deploy this file as a "Docker Compose" service in Dokploy.
+#   4. NEVER delete the postgres_data / media_data volumes unless you
+#      intend to wipe all users, orders and uploads.
 
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: purixia_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-purixia}
+      POSTGRES_USER: ${POSTGRES_USER:-purixia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Dokploy environment}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
   backend:
     build:
       context: ./backend
@@ -33,10 +70,19 @@ services:
       - ./backend/.env
     environment:
       DJANGO_SETTINGS_MODULE: core.settings.prod
-      # Persist the SQLite DB on a named volume so orders/users survive redeploys
-      SQLITE_DB_PATH: /app/sqlite/db.sqlite3
+      # Postgres connection (internal hostname "db"). Credentials resolve to
+      # the POSTGRES_* vars above; DB_PASSWORD maps to the single secret.
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-purixia}
+      DB_USER: ${POSTGRES_USER:-purixia}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Dokploy environment}
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
-      - sqlite_data:/app/sqlite
+      # Persist merchant uploads across redeploys (MEDIA_ROOT=/app/media).
+      - media_data:/app/media
     networks:
       - backend-net
       - dokploy-network
@@ -72,7 +118,8 @@ services:
       - traefik.http.services.purixia-frontend.loadbalancer.server.port=3000
 
 volumes:
-  sqlite_data:
+  postgres_data:
+  media_data:
 
 networks:
   backend-net:
