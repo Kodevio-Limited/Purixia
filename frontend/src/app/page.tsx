@@ -105,7 +105,7 @@ export default function HomePage() {
               <Link 
                 key={cat.id} 
                 href={`/products?category=${cat.slug}`}
-                className="flex flex-col items-center group w-[110px]"
+                className="flex flex-col items-center group min-w-[110px]"
               >
                 <div className="w-[80px] h-[80px] rounded-full bg-[#F5F5F5] mb-2.5 overflow-hidden relative border border-gray-100 group-hover:border-[#F4B227] transition-all shadow-sm group-hover:shadow-md">
                   {cat.image ? (
@@ -121,7 +121,7 @@ export default function HomePage() {
                     </div>
                   )}
                 </div>
-                <span className="text-[13px] font-bold text-black text-center leading-snug group-hover:text-[#F4B227] transition-colors line-clamp-2 uppercase tracking-tight">
+                <span className="text-[13px] font-bold text-black text-center whitespace-nowrap group-hover:text-[#F4B227] transition-colors uppercase tracking-tight">
                   {cat.name}
                 </span>
               </Link>
