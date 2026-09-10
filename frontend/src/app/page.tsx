@@ -166,7 +166,14 @@ export default function HomePage() {
                   ))}
                 </div>
                 <div className="flex justify-between items-center mt-auto pt-1.5">
-                  <span className="text-[15px] font-bold text-black">{formatPrice(product.price)}</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[15px] font-bold text-black">
+                      {formatPrice(Number(product.discount_percent) > 0 ? product.discounted_price : product.price)}
+                    </span>
+                    {Number(product.discount_percent) > 0 && (
+                      <span className="text-[11px] text-gray-400 line-through">{formatPrice(product.price)}</span>
+                    )}
+                  </div>
                   <div className="w-7 h-7 bg-[#F4B227] rounded-[5px] flex items-center justify-center text-white group-hover:bg-black transition-colors shadow-sm">
                     <ShoppingCart className="w-3.5 h-3.5" />
                   </div>

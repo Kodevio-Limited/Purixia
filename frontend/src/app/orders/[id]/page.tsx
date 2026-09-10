@@ -8,8 +8,9 @@ import { PageWrapper } from '../../../components/layout/PageWrapper';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { ReviewModal } from '../../../components/reviews/ReviewModal';
 import { formatPrice } from '../../../lib/utils';
-import { ArrowLeft, MapPin, Truck, Landmark, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, MapPin, Truck, Landmark, ShoppingBag, Star, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function OrderDetailPage() {
@@ -64,6 +65,14 @@ export default function OrderDetailPage() {
   const shippingCost = order?.delivery_type === 'outside' ? 120 : 60;
   const subtotal = order ? parseFloat(order.total_amount) : 0;
   const grandTotal = subtotal + shippingCost;
+
+  // Reviews: only delivered orders can be reviewed, one review per product per user.
+  const isDelivered = order?.status === 'delivered';
+  const reviewedProductIds = React.useMemo(
+    () => new Set(order?.reviewed_product_ids || []),
+    [order?.reviewed_product_ids]
+  );
+  const [reviewModalProduct, setReviewModalProduct] = React.useState<{ id: number; name: string } | null>(null);
 
   return (
     <PageWrapper className="space-y-6">
@@ -125,21 +134,41 @@ export default function OrderDetailPage() {
                   </h2>
 
                   <div className="divide-y divide-gray-50">
-                    {order.items?.map((item) => (
-                      <div key={item.id} className="py-4 flex justify-between items-center gap-4">
-                        <div className="min-w-0">
-                          <p className="font-bold text-gray-900 text-sm truncate">
-                            {item.product_name}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {formatPrice(item.unit_price)} x {item.quantity}
-                          </p>
+                    {order.items?.map((item) => {
+                      const alreadyReviewed = reviewedProductIds.has(item.product);
+                      return (
+                        <div key={item.id} className="py-4 flex justify-between items-center gap-4">
+                          <div className="min-w-0">
+                            <p className="font-bold text-gray-900 text-sm truncate">
+                              {item.product_name}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {formatPrice(item.unit_price)} x {item.quantity}
+                            </p>
+                            {isDelivered && (
+                              alreadyReviewed ? (
+                                <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-bold text-emerald-600">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  Reviewed
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewModalProduct({ id: item.product, name: item.product_name })}
+                                  className="inline-flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full bg-[#F4B227]/10 text-[#F4B227] text-[11px] font-bold hover:bg-[#F4B227] hover:text-white transition-colors"
+                                >
+                                  <Star className="w-3.5 h-3.5" />
+                                  Write a Review
+                                </button>
+                              )
+                            )}
+                          </div>
+                          <span className="font-extrabold text-sm text-gray-900 shrink-0">
+                            {formatPrice(item.subtotal)}
+                          </span>
                         </div>
-                        <span className="font-extrabold text-sm text-gray-900 shrink-0">
-                          {formatPrice(item.subtotal)}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -216,6 +245,16 @@ export default function OrderDetailPage() {
             </div>
           </div>
         )
+      )}
+
+      {/* Review modal for delivered order items */}
+      {reviewModalProduct && (
+        <ReviewModal
+          open={!!reviewModalProduct}
+          onClose={() => setReviewModalProduct(null)}
+          productId={reviewModalProduct.id}
+          productName={reviewModalProduct.name}
+        />
       )}
     </PageWrapper>
   );

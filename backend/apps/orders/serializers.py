@@ -20,14 +20,31 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items         = OrderItemSerializer(many=True, read_only=True)
     shipping_info = ShippingInfoSerializer(read_only=True)
+    # Products in this order the current user has already reviewed.
+    # Lets the user panel show "Reviewed" instead of "Write a Review".
+    reviewed_product_ids = serializers.SerializerMethodField()
 
     class Meta:
         model  = Order
         fields = (
             'id', 'user', 'shipping_info', 'delivery_type',
-            'payment_method', 'status', 'total_amount', 'items', 'created_at',
+            'payment_method', 'status', 'total_amount', 'items',
+            'reviewed_product_ids', 'created_at',
         )
         read_only_fields = ('user', 'status', 'total_amount', 'created_at')
+
+    def get_reviewed_product_ids(self, obj):
+        from apps.catalog.models import ProductReview
+        request = self.context.get('request')
+        if request is None or not getattr(request, 'user', None) or not request.user.is_authenticated:
+            return []
+        product_ids = [item.product_id for item in obj.items.all()]
+        if not product_ids:
+            return []
+        reviewed = ProductReview.objects.filter(
+            user=request.user, product_id__in=product_ids
+        ).values_list('product_id', flat=True)
+        return list(reviewed)
 
 
 class CartItemSerializer(serializers.Serializer):

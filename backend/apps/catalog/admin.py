@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Category, Product, ProductImage
+from .models import Category, Product, ProductFeature, ProductImage, ProductReview, ProductSpecification
 
 
 class ProductImageInline(admin.TabularInline):
@@ -14,6 +14,24 @@ class ProductImageInline(admin.TabularInline):
             return format_html('<img src="{}" style="max-height: 60px; border-radius: 6px;" />', obj.image.url)
         return ''
     image_preview.short_description = 'Preview'
+
+
+class ProductFeatureInline(admin.TabularInline):
+    model = ProductFeature
+    extra = 1
+    fields = ('text', 'order')
+
+
+class ProductSpecificationInline(admin.TabularInline):
+    model = ProductSpecification
+    extra = 1
+    fields = ('name', 'value', 'order')
+
+
+class ProductReviewInline(admin.TabularInline):
+    model = ProductReview
+    extra = 1
+    fields = ('reviewer_name', 'rating', 'title', 'comment')
 
 
 @admin.register(Category)
@@ -35,13 +53,14 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'title', 'description')
     list_editable = ()
     readonly_fields = ('created_at', 'updated_at')
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductFeatureInline, ProductSpecificationInline, ProductReviewInline]
     fieldsets = (
         ('Basic Info', {
             'fields': ('name', 'title', 'category', 'description')
         }),
         ('Pricing & Stock', {
-            'fields': ('price', 'quantity', 'in_stock')
+            'fields': ('price', 'discount_percent', 'quantity', 'in_stock'),
+            'description': 'Offer % set here drives the sale price shown on the site (0 = no offer).',
         }),
         ('Media', {
             'fields': ('image',)

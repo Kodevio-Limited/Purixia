@@ -1,5 +1,5 @@
 import api from '../lib/axios';
-import { Category, CategoryDetail, Product, PaginatedResponse } from '../types';
+import { Category, CategoryDetail, Product, PaginatedResponse, ProductReview, ReviewSubmitPayload } from '../types';
 
 export const catalogService = {
   getCategories: async (): Promise<Category[]> => {
@@ -30,6 +30,13 @@ export const catalogService = {
 
   getProduct: async (id: number | string): Promise<Product> => {
     const response = await api.get(`/api/catalog/products/${id}/`);
+    return response.data;
+  },
+
+  // Submits a review for a product from the user panel (order page).
+  // Backend requires: logged-in user, one review per product per user.
+  createReview: async (productId: number | string, payload: ReviewSubmitPayload): Promise<ProductReview> => {
+    const response = await api.post(`/api/catalog/products/${productId}/reviews/`, payload);
     return response.data;
   },
 };

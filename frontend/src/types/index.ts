@@ -31,6 +31,35 @@ export interface ProductImage {
   image: string;
 }
 
+export interface ProductFeature {
+  id: number;
+  text: string;
+  order: number;
+}
+
+export interface ProductSpecification {
+  id: number;
+  name: string;
+  value: string;
+  order: number;
+}
+
+export interface ProductReview {
+  id: number;
+  reviewer_name: string;
+  rating: number;
+  title: string;
+  comment: string;
+  is_verified_purchase: boolean;
+  created_at: string;
+}
+
+export interface ReviewSubmitPayload {
+  rating: number;
+  title?: string;
+  comment?: string;
+}
+
 export interface Product {
   id: number;
   category: number;
@@ -38,11 +67,16 @@ export interface Product {
   title: string;
   description: string;
   price: string;
+  discount_percent: number;
+  discounted_price: string;
   quantity: number;
   rating: string;
   in_stock: boolean;
   image: string | null;
   images: ProductImage[];
+  features: ProductFeature[];
+  specifications: ProductSpecification[];
+  reviews: ProductReview[];
   created_at: string;
   updated_at: string;
 }
@@ -96,6 +130,7 @@ export interface Order {
   status: OrderStatus;
   total_amount: string;
   items: OrderItem[];
+  reviewed_product_ids: number[];
   created_at: string;
 }
 

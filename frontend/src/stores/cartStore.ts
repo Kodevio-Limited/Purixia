@@ -29,11 +29,20 @@ function enrichItem(item: CartItem): CartItem {
   return { ...item, total_price: (parseFloat(item.price) * item.quantity).toFixed(2) };
 }
 
+function salePriceOf(product: any): string {
+  // Prefer the admin-discounted price when the backend provides one.
+  const discounted = product?.discounted_price;
+  const base = product?.price;
+  const pick = discounted ?? base;
+  return String(pick ?? '0');
+}
+
 function toCartItem(product: any, quantity: number): CartItem {
+  const unitPrice = salePriceOf(product);
   return enrichItem({
-    product: { id: product.id, name: product.name, price: String(product.price), image: product.image || null },
+    product: { id: product.id, name: product.name, price: unitPrice, image: product.image || null },
     quantity,
-    price: String(product.price),
+    price: unitPrice,
     total_price: '0',
   });
 }
