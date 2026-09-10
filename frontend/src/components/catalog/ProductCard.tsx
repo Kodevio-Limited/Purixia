@@ -37,6 +37,10 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const rating = parseFloat(product.rating) || 0;
 
+  // Show the discounted selling price when an offer is active, with the base price struck through
+  const hasOffer = Number(product.discount_percent) > 0;
+  const salePrice = hasOffer ? product.discounted_price : product.price;
+
   return (
     <Link href={`/products/${product.id}`}>
       <motion.div
@@ -82,7 +86,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Price + Cart button */}
           <div className="flex items-center justify-between mt-auto">
-            <span className="text-base font-extrabold text-violet-700">{formatPrice(product.price)}</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-base font-extrabold text-violet-700">{formatPrice(salePrice)}</span>
+              {hasOffer && (
+                <span className="text-xs text-gray-400 line-through">{formatPrice(product.price)}</span>
+              )}
+            </div>
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={handleAddToCart}
