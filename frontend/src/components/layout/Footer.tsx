@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   return (
@@ -10,9 +11,7 @@ export function Footer() {
         {/* Company Info */}
         <div className="col-span-1 space-y-4">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-[22px] font-extrabold text-black font-poppins">
-              Purixia BD
-            </span>
+            <Image src="/Logo1.png" alt="Purixia BD" width={100} height={30} className="object-contain" />
           </Link>
           <p className="text-[13px] text-[#666666] leading-relaxed font-poppins">
             Your premier destination for high-quality gadgets and tech accessories. We provide authentic products with reliable customer support across Bangladesh.

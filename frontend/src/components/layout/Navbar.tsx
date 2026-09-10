@@ -64,7 +64,7 @@ export function Navbar() {
         <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] flex items-center justify-between relative">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <Image src="/logo1.png" alt="Purixia BD" width={80} height={24} className="object-contain" priority />
+            <Image src="/Logo1.png" alt="Purixia BD" width={80} height={24} className="object-contain" priority />
           </Link>
 
           {/* Search Bar - Desktop */}
