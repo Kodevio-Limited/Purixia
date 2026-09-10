@@ -13,7 +13,7 @@ class BannerAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Banner Content', {
-            'fields': ('title', 'image', 'link_url')
+            'fields': ('title', 'subtitle', 'image')
         }),
         ('Settings', {
             'fields': ('order', 'is_active')
