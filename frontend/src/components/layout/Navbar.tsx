@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import {
   ShoppingCart,
@@ -22,6 +23,7 @@ import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 
 export function Navbar() {
+  const pathname = usePathname();
   const { user, isLoggedIn, logout } = useAuth();
   const { count, toggleDrawer } = useCart();
   const { data: categories } = useCategories();
@@ -182,13 +184,15 @@ export function Navbar() {
       )}
 
       {/* Bottom Navbar */}
-      <nav className="w-full h-[40px] bg-[#F5F5F5] flex items-center relative border-b border-gray-100 overflow-x-auto overflow-y-hidden scrollbar-hide">
+      <nav className="w-full h-[40px] bg-[#F5F5F5] flex items-center relative border-b border-gray-100">
         <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] flex items-center shrink-0">
-          {/* Categories Button */}
-          <div className="relative shrink-0">
+          {/* Categories Button + Dropdown: hover is handled on the wrapper so moving from the button into the panel keeps it open */}
+          <div
+            className="relative shrink-0"
+            onMouseEnter={() => setIsCategoriesOpen(true)}
+            onMouseLeave={() => setIsCategoriesOpen(false)}
+          >
             <button
-              onMouseEnter={() => setIsCategoriesOpen(true)}
-              onMouseLeave={() => setIsCategoriesOpen(false)}
               aria-expanded={isCategoriesOpen}
               aria-label="Categories"
               className="w-[140px] md:w-[180px] h-[40px] bg-[#F4B227] rounded-t-[5px] flex items-center px-[12px] gap-[8px] text-white font-bold text-[12px] md:text-[14px] font-poppins"
@@ -199,22 +203,35 @@ export function Navbar() {
 
             {/* Categories Dropdown */}
             {isCategoriesOpen && (
-              <div 
-                onMouseEnter={() => setIsCategoriesOpen(true)}
-                onMouseLeave={() => setIsCategoriesOpen(false)}
-                className="absolute left-0 top-[45px] w-[200px] bg-white rounded-b-[5px] shadow-lg z-[100] border-t-0"
-              >
-                {categories?.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/products?category=${cat.slug}`}
-                    className="flex items-center h-[42px] px-[12px] border-b border-[#E5E5E5] last:border-0 text-[#2A2A2A] hover:text-[#F4B227] transition-colors font-poppins text-sm"
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
+              <div className="absolute left-0 top-full w-[200px] bg-white rounded-b-[5px] shadow-lg z-[100]">
+                {categories && categories.length > 0 ? (
+                  categories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/products?category=${cat.slug}`}
+                      className="flex items-center h-[42px] px-[12px] border-b border-[#E5E5E5] last:border-0 text-[#2A2A2A] hover:text-[#F4B227] transition-colors font-poppins text-sm"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))
+                ) : (
+                  <div className="px-[12px] py-3 text-[12px] text-[#666666]">No categories found</div>
+                )}
               </div>
             )}
+          </div>
+
+          {/* Main Links */}
+          <div className="ml-3 md:ml-[24px] flex items-center gap-1 md:gap-[8px]">
+            <Link
+              href="/"
+              className={cn(
+                "px-3 md:px-4 py-1.5 rounded text-[13px] md:text-[15px] font-medium font-poppins whitespace-nowrap transition-colors",
+                pathname === "/" ? "text-[#F4B227]" : "text-[#2A2A2A] hover:text-[#F4B227]"
+              )}
+            >
+              Home
+            </Link>
           </div>
         </div>
       </nav>
