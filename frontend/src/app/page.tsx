@@ -100,14 +100,14 @@ export default function HomePage() {
           <h2 className="text-[20px] font-bold text-black mb-1 uppercase tracking-wider">Popular Categories</h2>
           <p className="text-[12px] text-[#666666] mb-[20px]">Explore our wide range of categories</p>
           
-          <div className="flex flex-wrap gap-[16px] justify-center w-full">
+          <div className="flex flex-wrap gap-x-[28px] gap-y-[24px] justify-center w-full">
             {categories?.slice(0, 6).map((cat) => (
               <Link 
                 key={cat.id} 
                 href={`/products?category=${cat.slug}`}
-                className="flex flex-col items-center group w-[85px]"
+                className="flex flex-col items-center group w-[110px]"
               >
-                <div className="w-[60px] h-[60px] rounded-full bg-[#F5F5F5] mb-2 overflow-hidden relative border border-gray-100 group-hover:border-[#F4B227] transition-all shadow-sm group-hover:shadow-md">
+                <div className="w-[80px] h-[80px] rounded-full bg-[#F5F5F5] mb-2.5 overflow-hidden relative border border-gray-100 group-hover:border-[#F4B227] transition-all shadow-sm group-hover:shadow-md">
                   {cat.image ? (
                     <Image
                       src={getImageUrl(cat.image)}
@@ -116,12 +116,12 @@ export default function HomePage() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#666666] font-bold text-base">
+                    <div className="w-full h-full flex items-center justify-center text-[#666666] font-bold text-xl">
                       {cat.name.charAt(0)}
                     </div>
                   )}
                 </div>
-                <span className="text-[12px] font-bold text-black text-center group-hover:text-[#F4B227] transition-colors line-clamp-1 uppercase tracking-tight">
+                <span className="text-[13px] font-bold text-black text-center leading-snug group-hover:text-[#F4B227] transition-colors line-clamp-2 uppercase tracking-tight">
                   {cat.name}
                 </span>
               </Link>
