@@ -34,8 +34,8 @@ export function Footer() {
         <div className="col-span-1">
           <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">Contact</h3>
           <ul className="space-y-3">
-            <li className="text-[#666666] text-[13px] font-poppins">Email: info@purixiabd.com</li>
-            <li className="text-[#666666] text-[13px] font-poppins">Phone: +880 1923-456666</li>
+            <li className="text-[#666666] text-[13px] font-poppins">Email: purixiabd@gmail.com</li>
+            <li className="text-[#666666] text-[13px] font-poppins">Phone: +880 1334-177275</li>
             <li className="text-[#666666] text-[13px] font-poppins">Address: Dhaka, Bangladesh</li>
           </ul>
         </div>
