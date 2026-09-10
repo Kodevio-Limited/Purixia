@@ -3,7 +3,6 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import {
   ShoppingCart,
@@ -23,7 +22,6 @@ import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 
 export function Navbar() {
-  const pathname = usePathname();
   const { user, isLoggedIn, logout } = useAuth();
   const { count, toggleDrawer } = useCart();
   const { data: categories } = useCategories();
@@ -217,25 +215,6 @@ export function Navbar() {
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Main Links */}
-          <div className="ml-3 md:ml-[24px] flex items-center gap-1 md:gap-[8px]">
-            <Link
-              href="/"
-              className={cn(
-                "px-3 md:px-4 py-1.5 rounded text-[13px] md:text-[15px] font-medium font-poppins whitespace-nowrap transition-colors",
-                pathname === "/" ? "text-[#F4B227]" : "text-[#2A2A2A] hover:text-[#F4B227]"
-              )}
-            >
-              Home
-            </Link>
-            <Link
-              href="/"
-              className="px-3 md:px-4 py-1.5 rounded text-[13px] md:text-[15px] font-medium font-poppins text-[#2A2A2A] hover:text-[#F4B227] whitespace-nowrap transition-colors"
-            >
-              Offers
-            </Link>
           </div>
         </div>
       </nav>

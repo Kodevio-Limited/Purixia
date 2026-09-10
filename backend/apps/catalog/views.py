@@ -12,8 +12,9 @@ from .serializers import (
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset     = Category.objects.all()
-    lookup_field = 'slug'
+    queryset         = Category.objects.all()
+    lookup_field     = 'slug'
+    pagination_class = None  # Categories are a small lookup list; return all of them unpaginated
 
     def get_serializer_class(self):
         return CategoryListSerializer if self.action == 'list' else CategorySerializer
