@@ -34,8 +34,7 @@ export function Footer() {
           <ul className="space-y-3">
             <li className="text-[#666666] text-[13px] font-poppins">Email: purixiabd@gmail.com</li>
             <li className="text-[#666666] text-[13px] font-poppins">
-              <span className="block">Phone: +880 1334-177275 (WhatsApp)</span>
-              <span className="block">Phone: +880 1334-177276 (Cell)</span>
+              <span className="block">Phone: +880 1334-177276</span>
             </li>
             <li className="text-[#666666] text-[13px] font-poppins">Address: Dhaka, Bangladesh</li>
           </ul>
