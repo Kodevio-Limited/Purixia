@@ -31,12 +31,10 @@ export function Footer() {
         {/* Contact Links */}
         <div className="col-span-1">
           <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">Contact</h3>
-          <ul className="space-y-3">
-            <li className="text-[#666666] text-[13px] font-poppins">Email: purixiabd@gmail.com</li>
-            <li className="text-[#666666] text-[13px] font-poppins">
-              <span className="block">Phone: +880 1334-177276</span>
-            </li>
-            <li className="text-[#666666] text-[13px] font-poppins">Address: Dhaka, Bangladesh</li>
+          <ul className="space-y-1">
+            <li className="text-[#666666] text-[13px] font-poppins leading-tight">Email: purixiabd@gmail.com</li>
+            <li className="text-[#666666] text-[13px] font-poppins leading-tight">Phone: 01334-177275</li>
+            <li className="text-[#666666] text-[13px] font-poppins leading-tight">Address: Dhaka, Bangladesh</li>
           </ul>
         </div>
 
@@ -73,10 +71,10 @@ export function Footer() {
             </svg>
           </a>
           <a
-            href="https://wa.me/8801334177276"
+            href="https://wa.me/8801334177275"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="WhatsApp"
+            aria-label="WhatsApp - 01334 177275"
             className="text-black hover:text-[#25D366] transition-colors"
           >
             <svg
