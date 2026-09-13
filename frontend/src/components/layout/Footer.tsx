@@ -21,10 +21,10 @@ export function Footer() {
         {/* About Links */}
         <div className="col-span-1">
           <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">About</h3>
-          <ul className="space-y-3">
-            <li><Link href="/" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Home</Link></li>
-            <li><Link href="/products" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Categories</Link></li>
-            <li><Link href="/faq" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">FAQ</Link></li>
+          <ul className="space-y-1">
+            <li className="text-[13px] font-poppins leading-tight"><Link href="/" className="text-[#666666] hover:text-[#F4B227]">Home</Link></li>
+            <li className="text-[13px] font-poppins leading-tight"><Link href="/products" className="text-[#666666] hover:text-[#F4B227]">Categories</Link></li>
+            <li className="text-[13px] font-poppins leading-tight"><Link href="/faq" className="text-[#666666] hover:text-[#F4B227]">FAQ</Link></li>
           </ul>
         </div>
 
@@ -41,10 +41,10 @@ export function Footer() {
         {/* Support Links */}
         <div className="col-span-1">
           <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">Support</h3>
-          <ul className="space-y-3">
-            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Privacy Policy</span></li>
-            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Terms & Condition</span></li>
-            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Help Center</span></li>
+          <ul className="space-y-1">
+            <li className="text-[13px] font-poppins leading-tight"><span aria-disabled="true" className="text-[#666666] cursor-not-allowed opacity-50">Privacy Policy</span></li>
+            <li className="text-[13px] font-poppins leading-tight"><span aria-disabled="true" className="text-[#666666] cursor-not-allowed opacity-50">Terms & Condition</span></li>
+            <li className="text-[13px] font-poppins leading-tight"><span aria-disabled="true" className="text-[#666666] cursor-not-allowed opacity-50">Help Center</span></li>
           </ul>
         </div>
       </div>
