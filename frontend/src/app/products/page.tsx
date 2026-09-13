@@ -14,6 +14,7 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const activeCategory = searchParams.get('category');
+  const offered = searchParams.get('offered') === 'true';
 
   const { data: categories, isLoading: isCategoriesLoading } = useCategories();
   const {
@@ -22,6 +23,7 @@ function ProductsContent() {
     isError,
   } = useProducts({
     category: activeCategory || undefined,
+    offered: offered || undefined,
   });
 
   const handleSelectCategory = (slug: string | null) => {

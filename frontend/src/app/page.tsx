@@ -13,6 +13,7 @@ import { Button } from '../components/ui/Button';
 export default function HomePage() {
   const { data: banners } = useBanners();
   const { data: products } = useProducts();
+  const { data: offeredProducts } = useProducts({ offered: true });
   const { data: categories } = useCategories();
   const [currentBanner, setCurrentBanner] = React.useState(0);
 
@@ -182,6 +183,70 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
+        </div>
+      </section>
+
+      {/* Offered Products Section */}
+      <section className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[20px] bg-white">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="flex justify-between items-end mb-[20px] border-b border-gray-100 pb-2">
+            <div>
+              <h2 className="text-[20px] font-bold text-black uppercase tracking-wider">Offered Products</h2>
+              <p className="text-[12px] text-[#666666]">Exclusive deals and discounts for you</p>
+            </div>
+            <Link href="/products?offered=true" className="text-[#F4B227] text-[11px] flex items-center gap-1 hover:text-black font-bold uppercase tracking-widest transition-colors mb-1">
+              See all <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {offeredProducts?.results && offeredProducts.results.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[20px]">
+              {offeredProducts.results.slice(0, 4).map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="group bg-white rounded-[10px] shadow-[0px_4px_15px_rgba(0,0,0,0.03)] overflow-hidden border border-gray-100 flex flex-col transition-all hover:shadow-[0px_10px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 h-full cursor-pointer"
+                >
+                  <div className="relative aspect-square w-full bg-[#F5F5F5] overflow-hidden">
+                    <Image
+                      src={getImageUrl(product.image)}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-4 transition-transform duration-500 group-hover:scale-110"
+                    />
+                    {Number(product.discount_percent) > 0 && (
+                      <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {product.discount_percent}% OFF
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3.5 flex flex-col flex-1 gap-1">
+                    <h3 className="text-[13px] font-semibold text-black line-clamp-1 group-hover:text-[#F4B227] transition-colors">{product.name}</h3>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className="w-3 h-3 fill-[#F4B227] text-[#F4B227]" />
+                      ))}
+                    </div>
+                    <div className="flex justify-between items-center mt-auto pt-1.5">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-[15px] font-bold text-black">
+                          {formatPrice(Number(product.discount_percent) > 0 ? product.discounted_price : product.price)}
+                        </span>
+                        {Number(product.discount_percent) > 0 && (
+                          <span className="text-[11px] text-gray-400 line-through">{formatPrice(product.price)}</span>
+                        )}
+                      </div>
+                      <div className="w-7 h-7 bg-[#F4B227] rounded-[5px] flex items-center justify-center text-white group-hover:bg-black transition-colors shadow-sm">
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-[13px] text-[#666666] py-8">No offered products at the moment. Check back soon for exclusive deals!</p>
+          )}
         </div>
       </section>
 

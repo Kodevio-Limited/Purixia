@@ -6,6 +6,7 @@ import { ReviewSubmitPayload } from '../types';
 export function useProducts(params?: {
   category?: string;
   in_stock?: boolean;
+  offered?: boolean;
   page?: number;
 }) {
   return useQuery({

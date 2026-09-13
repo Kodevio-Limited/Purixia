@@ -40,10 +40,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         qs       = super().get_queryset()
         category = self.request.query_params.get('category')
         in_stock = self.request.query_params.get('in_stock')
+        offered  = self.request.query_params.get('offered')
         if category:
             qs = qs.filter(category__slug=category)
         if in_stock is not None:
             qs = qs.filter(in_stock=in_stock.lower() == 'true')
+        if offered is not None and offered.lower() == 'true':
+            qs = qs.filter(discount_percent__gt=0)
         return qs
 
     @action(detail=True, methods=['post'], url_path='reviews', permission_classes=[IsAuthenticated])

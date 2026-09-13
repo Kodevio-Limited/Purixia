@@ -22,6 +22,7 @@ export const catalogService = {
   getProducts: async (params?: {
     category?: string;
     in_stock?: boolean;
+    offered?: boolean;
     page?: number;
   }): Promise<PaginatedResponse<Product>> => {
     const response = await api.get('/api/catalog/products/', { params });
