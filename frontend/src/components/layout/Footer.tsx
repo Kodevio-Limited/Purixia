@@ -11,7 +11,7 @@ export function Footer() {
         {/* Company Info */}
         <div className="col-span-1 space-y-4">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/Logo2.png" alt="Purixia BD" width={100} height={30} className="object-contain" />
+            <Image src="/Logo2.jpg" alt="Purixia BD" width={110} height={64} className="object-contain" />
           </Link>
           <p className="text-[13px] text-[#666666] leading-relaxed font-poppins">
           Purixia BD | The Pure Paragon.
