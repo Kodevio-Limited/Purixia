@@ -14,7 +14,8 @@ export function Footer() {
             <Image src="/Logo1.png" alt="Purixia BD" width={100} height={30} className="object-contain" />
           </Link>
           <p className="text-[13px] text-[#666666] leading-relaxed font-poppins">
-            Your premier destination for high-quality gadgets and tech accessories. We provide authentic products with reliable customer support across Bangladesh.
+          Purixia BD | The Pure Paragon.
+          Built on integrity, driven by trust. Your one-stop destination for authentic tech, from smart gadgets to everyday essentials — small beginnings, big promises.
           </p>
         </div>
 
@@ -34,8 +35,7 @@ export function Footer() {
           <ul className="space-y-3">
             <li className="text-[#666666] text-[13px] font-poppins">Email: purixiabd@gmail.com</li>
             <li className="text-[#666666] text-[13px] font-poppins">
-              <span className="block">Phone: +880 1334-177275 (WhatsApp)</span>
-              <span className="block">Phone: +880 1334-177276 (Cell)</span>
+              Phone: +880 1334-177276
             </li>
             <li className="text-[#666666] text-[13px] font-poppins">Address: Dhaka, Bangladesh</li>
           </ul>
