@@ -11,7 +11,7 @@ export function Footer() {
         {/* Company Info */}
         <div className="col-span-1 space-y-4">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/Logo1.png" alt="Purixia BD" width={100} height={30} className="object-contain" />
+            <Image src="/Logo2.png" alt="Purixia BD" width={100} height={30} className="object-contain" />
           </Link>
           <p className="text-[13px] text-[#666666] leading-relaxed font-poppins">
           Purixia BD | The Pure Paragon.
@@ -45,9 +45,9 @@ export function Footer() {
         <div className="col-span-1">
           <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">Support</h3>
           <ul className="space-y-3">
-            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Privacy Policy</span></li>
-            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Terms & Condition</span></li>
-            <li><span aria-disabled="true" className="text-[#666666] text-[13px] font-poppins cursor-not-allowed opacity-50">Help Center</span></li>
+            <li><Link href="/privacy-policy" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Privacy Policy</Link></li>
+            <li><Link href="/terms-and-conditions" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Terms & Condition</Link></li>
+            <li><Link href="/contact-us" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Contact Us</Link></li>
           </ul>
         </div>
       </div>
