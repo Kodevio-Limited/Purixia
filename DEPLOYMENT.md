@@ -7,6 +7,7 @@ Production topology: Docker Compose on Dokploy, Traefik as the load balancer.
 | `frontend` | `./frontend` (Next.js) | `https://purixiabd.com`, `https://www.purixiabd.com` | 2 |
 | `backend` | `./backend` (Gunicorn `gthread`) | `https://admin.purixiabd.com` (incl. `/admin/`) | 2 |
 | `migrate` | same as backend, one-shot | — (runs `migrate` + `ensure_admin` + `collectstatic`, then exits) | 1 run |
+| `media-init` | same as backend, one-shot, **as root** | — (`chown -R app:app /app/media`, then exits) | 1 run |
 | `db` | `postgres:16-alpine` | internal only | 1 |
 | `redis` | `redis:7-alpine` | internal only | 1 |
 
@@ -200,7 +201,29 @@ the scaling ceiling the day a second host appears: a backend replica on host B
 cannot see host A's volume, so product images would 404 depending on which
 replica Traefik picks.
 
-Options (not implemented — awaiting decision):
+### Ownership (why uploads 500, and the fix)
+
+The backend runs as the unprivileged `app` user (uid 100). A `media_data`
+volume created by an **older image that ran as root** is root-owned, so saving
+an image raises `PermissionError` and the admin returns **500**. The
+`media-init` one-shot service (run as root, before the backend replicas) fixes
+this on every deploy:
+
+```sh
+mkdir -p /app/media/{products,categories,banners} && chown -R app:app /app/media
+```
+
+If you must repair a live volume **without** a redeploy, run the same as root
+on the host (one replica is enough — the volume is shared):
+
+```sh
+docker exec -u root <backend-container> chown -R app:app /app/media
+```
+
+Verify from inside a backend container: `ls -ld /app/media` shows `app app`, and
+`touch /app/media/_wtest && rm /app/media/_wtest` succeeds.
+
+Options for going multi-host (not implemented — awaiting decision):
 
 | Option | Effort | Notes |
 |---|---|---|

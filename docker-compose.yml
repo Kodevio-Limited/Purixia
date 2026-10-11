@@ -131,6 +131,26 @@ services:
     networks:
       - backend-net
 
+  # One-shot fix-up for the shared media volume. The backend runs as the
+  # unprivileged "app" user, but a media volume created by an older image (or by
+  # a root process) is root-owned, so uploads fail with PermissionError -> 500
+  # in the admin. This runs as root, makes the volume writable by "app", and
+  # exits before any backend replica starts. Safe to run every deploy.
+  media-init:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: "no"
+    user: root
+    command: >
+      sh -c "mkdir -p /app/media/products /app/media/categories /app/media/banners &&
+             chown -R app:app /app/media &&
+             echo 'media volume owned by app:app'"
+    volumes:
+      - media_data:/app/media
+    networks:
+      - backend-net
+
   backend:
     build:
       context: ./backend
@@ -178,6 +198,9 @@ services:
       BOOTSTRAP_ON_BOOT: "0"
     depends_on:
       migrate:
+        condition: service_completed_successfully
+      # Ensure the media volume is app-writable before we can write uploads.
+      media-init:
         condition: service_completed_successfully
       redis:
         condition: service_healthy
