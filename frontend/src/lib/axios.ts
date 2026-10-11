@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearAccessToken, getAccessToken, setAccessToken } from './token';
 
 const BASE_API = process.env.NEXT_PUBLIC_API_URL || 'https://admin.purixiabd.com';
 
@@ -7,16 +8,16 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Required so the browser attaches the HttpOnly refresh cookie to the auth
+  // endpoints (login/register responses also set it via this flag).
   withCredentials: true,
 });
 
 api.interceptors.request.use(
   (config) => {
-    if (typeof window !== 'undefined') {
-      const accessToken = localStorage.getItem('access_token');
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-      }
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -25,10 +26,15 @@ api.interceptors.request.use(
   }
 );
 
-let isRefreshing = false;
-let failedQueue: any[] = [];
+interface QueuedRequest {
+  resolve: (token: string | null) => void;
+  reject: (error: unknown) => void;
+}
 
-const processQueue = (error: any, token: string | null = null) => {
+let isRefreshing = false;
+let failedQueue: QueuedRequest[] = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -39,6 +45,27 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Endpoints that manage their own 401s — the interceptor must not try to
+// refresh for them (and must not bounce an already-public page to register).
+const AUTH_URLS = [
+  '/api/auth/token/refresh/',
+  '/api/auth/login/',
+  '/api/auth/register/',
+  '/api/auth/password/reset/',
+  '/api/auth/password/reset/confirm/',
+  '/api/auth/verify-email/',
+];
+
+const redirectToRegister = () => {
+  if (typeof window !== 'undefined') {
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/login' && currentPath !== '/register') {
+      // Redirect to register as per user request for unauthenticated flow
+      window.location.href = `/register?redirect=${encodeURIComponent(currentPath)}`;
+    }
+  }
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -46,7 +73,7 @@ api.interceptors.response.use(
 
     // Check if error is 401 and request hasn't been retried
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (originalRequest.url === '/api/auth/token/refresh/' || originalRequest.url === '/api/auth/login/' || originalRequest.url === '/api/auth/register/') {
+      if (AUTH_URLS.includes(originalRequest.url)) {
         return Promise.reject(error);
       }
 
@@ -66,37 +93,14 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
-
-      if (!refreshToken) {
-        isRefreshing = false;
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          
-          // Check if we are already on login or register page to avoid loops
-          const currentPath = window.location.pathname;
-          if (currentPath !== '/login' && currentPath !== '/register') {
-            // Redirect to register as per user request for unauthenticated flow
-            window.location.href = `/register?redirect=${encodeURIComponent(currentPath)}`;
-          }
-        }
-        return Promise.reject(error);
-      }
-
       try {
-        const response = await axios.post(
-          `${BASE_API}/api/auth/token/refresh/`,
-          { refresh: refreshToken }
-        );
-
+        // Single flight: the refresh cookie (HttpOnly, Path=/api/auth/) rides
+        // along via withCredentials — no body needed. The backend rotates the
+        // cookie and returns only the new access token.
+        const response = await api.post('/api/auth/token/refresh/', {});
         const newAccessToken = response.data.access;
 
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('access_token', newAccessToken);
-        }
-
-        api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+        setAccessToken(newAccessToken);
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         processQueue(null, newAccessToken);
@@ -107,15 +111,10 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         isRefreshing = false;
 
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          
-          const currentPath = window.location.pathname;
-          if (currentPath !== '/login' && currentPath !== '/register') {
-            window.location.href = `/register?redirect=${encodeURIComponent(currentPath)}`;
-          }
-        }
+        // Refresh failed (expired/blacklisted/missing cookie): the session is
+        // over. Drop the in-memory token and send the user to re-authenticate.
+        clearAccessToken();
+        redirectToRegister();
         return Promise.reject(refreshError);
       }
     }

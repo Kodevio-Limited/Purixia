@@ -21,6 +21,13 @@ export default function OrderDetailPage() {
 
   const { data: order, isLoading, isError } = useOrder(id);
 
+  // Hooks must run on every render, before any early return below.
+  const reviewedProductIds = React.useMemo(
+    () => new Set(order?.reviewed_product_ids || []),
+    [order?.reviewed_product_ids]
+  );
+  const [reviewModalProduct, setReviewModalProduct] = React.useState<{ id: number; name: string } | null>(null);
+
   // Redirect if not logged in
   React.useEffect(() => {
     if (!isChecking && !isLoggedIn) {
@@ -62,17 +69,14 @@ export default function OrderDetailPage() {
     );
   }
 
-  const shippingCost = order?.delivery_type === 'outside' ? 120 : 60;
-  const subtotal = order ? parseFloat(order.total_amount) : 0;
-  const grandTotal = subtotal + shippingCost;
+  // All money values come from the server so the receipt can never disagree
+  // with what was actually charged.
+  const subtotal = parseFloat(order?.subtotal ?? '0') || 0;
+  const shippingCost = parseFloat(order?.delivery_charge ?? '0') || 0;
+  const grandTotal = parseFloat(order?.total_amount ?? '0') || 0;
 
   // Reviews: only delivered orders can be reviewed, one review per product per user.
   const isDelivered = order?.status === 'delivered';
-  const reviewedProductIds = React.useMemo(
-    () => new Set(order?.reviewed_product_ids || []),
-    [order?.reviewed_product_ids]
-  );
-  const [reviewModalProduct, setReviewModalProduct] = React.useState<{ id: number; name: string } | null>(null);
 
   return (
     <PageWrapper className="space-y-6">

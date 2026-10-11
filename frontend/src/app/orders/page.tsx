@@ -6,10 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { useOrders } from '../../hooks/useOrders';
 import { PageWrapper } from '../../components/layout/PageWrapper';
-import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { formatPrice } from '../../lib/utils';
 import { Package, Calendar, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 

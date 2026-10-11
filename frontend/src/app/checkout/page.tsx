@@ -6,19 +6,34 @@ import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { useCartStore } from '../../stores/cartStore';
-import { usePlaceOrder } from '../../hooks/useOrders';
-import { getImageUrl } from '../../lib/utils';
-import { X, Trash2, CheckCircle, Home, ShoppingBag } from 'lucide-react';
+import { usePlaceOrder, useDeliveryOptions, FALLBACK_DELIVERY_OPTIONS } from '../../hooks/useOrders';
+import { cn, createIdempotencyKey, getImageUrl } from '../../lib/utils';
+import { X, Trash2, CheckCircle, Home } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// Cash on delivery depends on reaching the customer, so these rules mirror
+// backend/apps/orders/serializers.py: the customer is told about a bad phone
+// number or address here instead of after the order request is rejected.
+const BD_PHONE_PATTERN = /^(?:\+?880|0)1[3-9]\d{8}$/;
+
+/** Strip the separators customers type; the server stores one canonical form. */
+const normalizePhone = (value: string) => value.replace(/[\s\-().]/g, '');
+
 const checkoutSchema = z.object({
-  name: z.string().min(2, 'Name is required'),
+  name: z.string().min(2, 'Enter the name of the person receiving the order'),
   email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Invalid phone number'),
-  address: z.string().min(5, 'Delivery address is required'),
+  phone: z
+    .string()
+    .refine((value) => BD_PHONE_PATTERN.test(normalizePhone(value)), {
+      message: 'Enter a valid Bangladeshi mobile number, e.g. 01712345678',
+    }),
+  address: z
+    .string()
+    .min(10, 'Enter the full delivery address (house, road, area, district)')
+    .max(500, 'Address is too long (500 characters maximum)'),
   delivery_type: z.enum(['inside', 'outside']),
   payment_method: z.enum(['cod', 'card', 'bkash', 'nagad']),
 });
@@ -28,9 +43,14 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 export default function CheckoutPage() {
   const router = useRouter();
   const { isLoggedIn, user, loading: isChecking } = useAuth();
-  const { items, grandTotal: cartGrandTotal, removeItem, clearCart } = useCartStore();
+  const { items, removeItem } = useCartStore();
   const placeOrderMutation = usePlaceOrder();
+  // Delivery fees are owned by the backend; fall back to the documented
+  // defaults only until that request resolves.
+  const { data: deliveryOptions } = useDeliveryOptions();
   const [orderSuccess, setOrderSuccess] = React.useState<{ id: string } | null>(null);
+  // One key per checkout attempt, reused while the attempt is unresolved.
+  const idempotencyKeyRef = React.useRef<string | null>(null);
 
   const {
     register,
@@ -107,8 +127,9 @@ export default function CheckoutPage() {
 
   if (isChecking || !isLoggedIn) return null;
 
-  const shippingCost = deliveryType === 'outside' ? 120 : 60;
-  const subtotal = parseFloat(cartGrandTotal) || items.reduce((acc, item) => acc + parseFloat(item.price) * item.quantity, 0);
+  const fees = deliveryOptions ?? FALLBACK_DELIVERY_OPTIONS;
+  const shippingCost = parseFloat(deliveryType === 'outside' ? fees.outside : fees.inside) || 0;
+  const subtotal = items.reduce((acc, item) => acc + parseFloat(item.price) * item.quantity, 0);
   const grandTotal = subtotal + shippingCost;
 
   const onSubmit = async (values: CheckoutFormValues) => {
@@ -117,11 +138,16 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Reuse the key until the attempt resolves, so a double click or a retry
+    // after a timeout returns the same order instead of placing a second one.
+    const idempotencyKey = idempotencyKeyRef.current ?? createIdempotencyKey();
+    idempotencyKeyRef.current = idempotencyKey;
+
     const payload = {
       shipping_info: {
         name: values.name,
         email: values.email,
-        phone: values.phone,
+        phone: normalizePhone(values.phone),
         address: values.address,
       },
       delivery_type: values.delivery_type,
@@ -134,11 +160,14 @@ export default function CheckoutPage() {
     };
 
     try {
-      const order = await placeOrderMutation.mutateAsync(payload);
+      const order = await placeOrderMutation.mutateAsync({ payload, idempotencyKey });
+      // The order exists now; the next attempt must get a fresh key.
+      idempotencyKeyRef.current = null;
       setOrderSuccess({ id: String(order.id) });
       useCartStore.getState().setCart({ items: [], grand_total: '0.00', count: 0 });
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Failed to place order');
+    } catch {
+      // Keep the key so the retry is treated as the same attempt.
+      // The error toast is surfaced by usePlaceOrder's onError handler.
     }
   };
 
@@ -210,8 +239,8 @@ export default function CheckoutPage() {
               <div className="space-y-2">
                 <label className="text-[14px] font-semibold text-black">Select Delivery</label>
                 <select {...register('delivery_type')} className="w-full h-[48px] px-4 bg-white border border-gray-100 rounded-[8px] text-sm focus:outline-none focus:border-[#F4B227] appearance-none cursor-pointer">
-                  <option value="inside">Inside Dhaka: 60 TK</option>
-                  <option value="outside">Outside Dhaka: 120 TK</option>
+                  <option value="inside">Inside Dhaka: {fees.inside} TK</option>
+                  <option value="outside">Outside Dhaka: {fees.outside} TK</option>
                 </select>
               </div>
             </div>
@@ -271,7 +300,3 @@ export default function CheckoutPage() {
   );
 }
 
-// Helper for conditional classes
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
-}

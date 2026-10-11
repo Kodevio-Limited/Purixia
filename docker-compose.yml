@@ -1,4 +1,4 @@
-# Purixia BD - single deployment (frontend + backend + postgres) on Dokploy
+# Purixia BD - single deployment (frontend + backend + postgres + redis) on Dokploy
 #
 # ONE global compose file deploys everything. TWO public domains:
 #
@@ -12,23 +12,45 @@
 #   - The frontend (storefront) calls the backend
 #     DIRECTLY at https://admin.purixiabd.com (no reverse proxy).
 #     Django CORS allows cross-origin requests from the frontend domain.
-#   - Postgres ("db" service) is INTERNAL ONLY (no Traefik labels).
+#   - Postgres ("db") and Redis ("redis") are INTERNAL ONLY (no Traefik labels).
 #     Data lives on the "postgres_data" named volume and survives redeploys.
 #   - Uploaded media lives on the "media_data" named volume and survives
 #     redeploys. Images shipped in the image seed the volume on first boot.
 #
+# ── LOAD BALANCING ───────────────────────────────────────────────────────────
+#   Traefik (already running in Dokploy) IS the load balancer. Increasing
+#   `deploy.replicas` on the backend/frontend services spins up more containers
+#   that Traefik automatically fans requests out across, and the Traefik
+#   healthcheck below removes any replica that stops answering /api/health/.
+#
+#   Scale up/down without editing this file:
+#       docker compose up -d --scale backend=3 --scale frontend=2
+#   or just change the `replicas:` values and redeploy.
+#
+#   Because more than one replica now runs, sessions/throttling must not live in
+#   per-container memory, so Redis is wired in as the shared cache. Cart sessions
+#   already live in Postgres, which is shared too.
+#
 # Required env vars in Dokploy (compose service -> Environment):
 #   SECRET_KEY=<long random string>
 #   POSTGRES_PASSWORD=<strong db password>   (single source of DB credentials)
-#   ADMIN_USERNAME=<admin username>
+#      ADMIN_USERNAME=<admin username>
 #   ADMIN_EMAIL=<admin email>
 #   ADMIN_PASSWORD=<admin password>
 #   ADMIN_RESET_PASSWORD=1                    (first boot only, then remove/0)
 #
+#   These are injected into the containers directly from this environment —
+#   there is no committed .env file. backend/.env.example is the local-dev
+#   template only.
+#
 # Optional (defaults shown):
 #   POSTGRES_DB=purixia  POSTGRES_USER=purixia
 #   ALLOWED_HOSTS=purixiabd.com,www.purixiabd.com,admin.purixiabd.com
+#   CORS_ALLOWED_ORIGINS=https://purixiabd.com,https://www.purixiabd.com
 #   CSRF_TRUSTED_ORIGINS=https://purixiabd.com,https://www.purixiabd.com,https://admin.purixiabd.com
+#   REDIS_URL=redis://redis:6379/0
+#   DELIVERY_CHARGE_INSIDE=60  DELIVERY_CHARGE_OUTSIDE=120
+#   THROTTLE_ORDER=10/hour     MAX_OPEN_ORDERS=1   (COD abuse protection)
 #
 # Before deploying:
 #   1. DNS A records on purixiabd.com pointing to your server IP:
@@ -43,7 +65,6 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: purixia_db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-purixia}
@@ -60,16 +81,79 @@ services:
       retries: 5
       start_period: 20s
 
+  # Shared cache for rate limiting / sessions across backend replicas.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # One-shot schema migration + admin bootstrap. Runs to completion BEFORE any
+  # backend replica starts, so replicas never race each other on migrations.
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: "no"
+    # All configuration comes from the orchestrator environment, so a fresh
+    # deploy can never boot without its secrets (no committed .env required).
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings.prod
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in the Dokploy environment}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_RESET_PASSWORD: ${ADMIN_RESET_PASSWORD:-0}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-purixiabd.com,www.purixiabd.com,admin.purixiabd.com}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://purixiabd.com,https://www.purixiabd.com}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://purixiabd.com,https://www.purixiabd.com,https://admin.purixiabd.com}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-purixia}
+      DB_USER: ${POSTGRES_USER:-purixia}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Dokploy environment}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    command: >
+      sh -c "python manage.py migrate --noinput --settings=core.settings.prod &&
+             python manage.py ensure_admin --settings=core.settings.prod &&
+             python manage.py collectstatic --noinput --settings=core.settings.prod"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend-net
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: purixia_backend
     restart: unless-stopped
-    env_file:
-      - ./backend/.env
+    # Give Gunicorn time for a graceful drain (gunicorn.conf.py graceful_timeout
+    # is 30s). Docker's default 10s would SIGKILL mid-request, so a rolling
+    # restart WOULD drop in-flight requests without this.
+    stop_grace_period: 40s
+    # Load-balanced by Traefik across every replica.
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 256M
     environment:
       DJANGO_SETTINGS_MODULE: core.settings.prod
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in the Dokploy environment}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-purixiabd.com,www.purixiabd.com,admin.purixiabd.com}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://purixiabd.com,https://www.purixiabd.com}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://purixiabd.com,https://www.purixiabd.com,https://admin.purixiabd.com}
       # Postgres connection (internal hostname "db"). Credentials resolve to
       # the POSTGRES_* vars above; DB_PASSWORD maps to the single secret.
       DB_HOST: db
@@ -77,8 +161,25 @@ services:
       DB_NAME: ${POSTGRES_DB:-purixia}
       DB_USER: ${POSTGRES_USER:-purixia}
       DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Dokploy environment}
+      # Shared cache/rate-limit backend across replicas.
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      # COD abuse protection (defaults shown; see backend/.env.example).
+      THROTTLE_ORDER: ${THROTTLE_ORDER:-10/hour}
+      MAX_OPEN_ORDERS: ${MAX_OPEN_ORDERS:-1}
+      # Explicit concurrency budget (see backend/gunicorn.conf.py):
+      #   4 workers x 8 threads = 32 in-flight requests per replica
+      #   ~50 MB RSS per worker, and 1 Postgres connection per worker
+      #   => ~4 DB connections per replica, 4 x replicas across the fleet.
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-4}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-8}
+      # Schema and admin bootstrap are owned by the "migrate" service above,
+      # not by each replica (two replicas doing it at once would race).
+      MIGRATE_ON_BOOT: "0"
+      BOOTSTRAP_ON_BOOT: "0"
     depends_on:
-      db:
+      migrate:
+        condition: service_completed_successfully
+      redis:
         condition: service_healthy
     volumes:
       # Persist merchant uploads across redeploys (MEDIA_ROOT=/app/media).
@@ -93,6 +194,10 @@ services:
       - traefik.http.routers.purixia-backend.tls.certResolver=letsencrypt
       - traefik.docker.network=dokploy-network
       - traefik.http.services.purixia-backend.loadbalancer.server.port=8000
+      # Only route to replicas that answer the health endpoint.
+      - traefik.http.services.purixia-backend.loadbalancer.healthcheck.path=/api/health/
+      - traefik.http.services.purixia-backend.loadbalancer.healthcheck.interval=15s
+      - traefik.http.services.purixia-backend.loadbalancer.healthcheck.timeout=5s
 
   frontend:
     build:
@@ -100,8 +205,16 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: https://admin.purixiabd.com
-    container_name: purixia_frontend
     restart: unless-stopped
+    # Next.js handles SIGTERM itself; this gives it room to finish responses.
+    stop_grace_period: 30s
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
     environment:
       - NODE_ENV=production
     depends_on:
@@ -116,6 +229,9 @@ services:
       - traefik.http.routers.purixia-frontend.tls.certResolver=letsencrypt
       - traefik.docker.network=dokploy-network
       - traefik.http.services.purixia-frontend.loadbalancer.server.port=3000
+      - traefik.http.services.purixia-frontend.loadbalancer.healthcheck.path=/api/health
+      - traefik.http.services.purixia-frontend.loadbalancer.healthcheck.interval=15s
+      - traefik.http.services.purixia-frontend.loadbalancer.healthcheck.timeout=5s
 
 volumes:
   postgres_data:

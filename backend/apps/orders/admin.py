@@ -1,8 +1,51 @@
+from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
-from .models import Order, OrderItem, ShippingInfo
+from .models import (
+    InvalidStatusTransition, Order, OrderItem, OrderStatus, ShippingInfo,
+)
+
+
+class OrderAdminForm(forms.ModelForm):
+    """Refuses illegal status jumps and says why, instead of silently saving.
+
+    The allowed moves themselves live on the model (``can_transition_to``); this
+    only turns a refusal into a normal form error.
+    """
+
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remember what is stored: by the time clean_status() runs,
+        # ``self.instance.status`` still holds the value from the database.
+        self.stored_status = self.instance.status if self.instance.pk else None
+
+    def clean_status(self):
+        new_status = self.cleaned_data['status']
+        if (
+            self.stored_status is not None
+            and new_status != self.stored_status
+            and not self.instance.can_transition_to(new_status)
+        ):
+            raise forms.ValidationError(
+                f'An order that is "{self.stored_status}" cannot be changed to '
+                f'"{new_status}". Allowed next steps: '
+                f'{self._allowed_label()}.'
+            )
+        return new_status
+
+    def _allowed_label(self):
+        from .models import ALLOWED_STATUS_TRANSITIONS
+
+        allowed = ALLOWED_STATUS_TRANSITIONS.get(self.stored_status, set())
+        if not allowed:
+            return 'none (this status is final)'
+        return ', '.join(sorted(allowed))
 
 
 class OrderItemInline(admin.TabularInline):
@@ -26,17 +69,18 @@ def get_status_badge(status):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    form = OrderAdminForm
     list_display = ('order_id', 'customer', 'status_badge', 'payment_info', 'delivery_info', 'amount_display', 'placed_at')
     list_filter = ('status', 'payment_method', 'delivery_type', 'created_at')
     search_fields = ('user__username', 'user__email', 'id')
-    readonly_fields = ('total_amount', 'created_at')
+    readonly_fields = ('total_amount', 'idempotency_key', 'created_at')
     inlines = [OrderItemInline]
     actions = ['mark_confirmed', 'mark_shipped', 'mark_delivered', 'mark_cancelled']
     date_hierarchy = 'created_at'
 
     fieldsets = (
         ('Order Info', {
-            'fields': ('user', 'status', 'total_amount')
+            'fields': ('user', 'status', 'total_amount', 'idempotency_key')
         }),
         ('Delivery', {
             'fields': ('delivery_type', 'shipping_info')
@@ -90,25 +134,49 @@ class OrderAdmin(admin.ModelAdmin):
     placed_at.short_description = 'Placed'
     placed_at.admin_order_field = 'created_at'
 
+    def save_model(self, request, obj, form, change):
+        stored_status = getattr(form, 'stored_status', None)
+        if change and stored_status is not None and stored_status != obj.status:
+            # Route the status change through the domain method so cancelling
+            # restores stock, and an illegal jump is refused even if the form
+            # was bypassed.
+            Order.objects.get(pk=obj.pk).transition_to(obj.status)
+        super().save_model(request, obj, form, change)
+
+    # ── Bulk status actions ───────────────────────────────────────────────────
+    # Each one goes through Order.transition_to() rather than a queryset.update()
+    # so the allowed-transition rules apply and cancelling restores stock.
+    def _transition_selected(self, request, queryset, new_status, label):
+        moved = 0
+        skipped = 0
+        for order in queryset:
+            try:
+                order.transition_to(new_status)
+            except InvalidStatusTransition:
+                skipped += 1
+            else:
+                moved += 1
+
+        message = f'{moved} order(s) marked as {label}.'
+        if skipped:
+            message += f' {skipped} skipped: that move is not allowed from their current status.'
+        self.message_user(request, message)
+
     def mark_confirmed(self, request, queryset):
-        updated = queryset.update(status='confirmed')
-        self.message_user(request, f'{updated} order(s) marked as confirmed.')
+        self._transition_selected(request, queryset, OrderStatus.CONFIRMED, 'confirmed')
     mark_confirmed.short_description = 'Mark selected as Confirmed'
 
     def mark_shipped(self, request, queryset):
-        updated = queryset.update(status='shipped')
-        self.message_user(request, f'{updated} order(s) marked as shipped.')
+        self._transition_selected(request, queryset, OrderStatus.SHIPPED, 'shipped')
     mark_shipped.short_description = 'Mark selected as Shipped'
 
     def mark_delivered(self, request, queryset):
-        updated = queryset.update(status='delivered')
-        self.message_user(request, f'{updated} order(s) marked as delivered.')
+        self._transition_selected(request, queryset, OrderStatus.DELIVERED, 'delivered')
     mark_delivered.short_description = 'Mark selected as Delivered'
 
     def mark_cancelled(self, request, queryset):
-        updated = queryset.update(status='cancelled')
-        self.message_user(request, f'{updated} order(s) marked as cancelled.')
-    mark_cancelled.short_description = 'Mark selected as Cancelled'
+        self._transition_selected(request, queryset, OrderStatus.CANCELLED, 'cancelled')
+    mark_cancelled.short_description = 'Mark selected as Cancelled (restores stock)'
 
 
 @admin.register(OrderItem)

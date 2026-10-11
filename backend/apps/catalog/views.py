@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Count
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
@@ -6,8 +7,8 @@ from rest_framework.response import Response
 
 from .models import Category, Product
 from .serializers import (
-    CategoryListSerializer, CategorySerializer, ProductReviewCreateSerializer,
-    ProductSerializer,
+    CategoryListSerializer, CategorySerializer, ProductListSerializer,
+    ProductReviewCreateSerializer, ProductSerializer,
 )
 
 
@@ -18,6 +19,20 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         return CategoryListSerializer if self.action == 'list' else CategorySerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'retrieve':
+            # Category detail embeds full products; prefetch everything the
+            # nested ProductSerializer touches so it doesn't fire per-product
+            # queries (features, specifications, reviews, gallery images).
+            qs = qs.prefetch_related(
+                'products__images',
+                'products__features',
+                'products__specifications',
+                'products__reviews',
+            )
+        return qs
 
     def get_permissions(self):
         if self.action in ('create', 'update', 'partial_update', 'destroy'):
@@ -36,8 +51,30 @@ class ProductViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated()]
         return [AllowAny()]
 
+    def get_serializer_class(self):
+        # Grid/list views get a compact payload; detail (and writes) get everything.
+        if self.action == 'list':
+            return ProductListSerializer
+        return ProductSerializer
+
     def get_queryset(self):
-        qs       = super().get_queryset()
+        qs = super().get_queryset()
+
+        if self.action == 'list':
+            # Single aggregate query for review counts + one for gallery images,
+            # instead of per-product COUNT/query per row. The explicit order_by
+            # matters: annotate() adds GROUP BY, which disables Meta.ordering and
+            # would otherwise make pagination results unstable.
+            qs = (
+                qs.annotate(review_count=Count('reviews'))
+                .prefetch_related('images')
+                .order_by('-created_at', '-id')
+            )
+        elif self.action == 'retrieve':
+            qs = qs.prefetch_related(
+                'images', 'features', 'specifications', 'reviews',
+            )
+
         category = self.request.query_params.get('category')
         in_stock = self.request.query_params.get('in_stock')
         offered  = self.request.query_params.get('offered')

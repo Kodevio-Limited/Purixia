@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { useCartStore } from '../stores/cartStore';
 import { useAuthStore } from '../stores/authStore';
 import { CartDrawer } from '../components/cart/CartDrawer';
+import { initSentry } from '../lib/sentry';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Create client on client side to avoid sharing cache across users
@@ -26,6 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   // Initialize cart and auth on mount
   React.useEffect(() => {
+    initSentry();   // no-op unless NEXT_PUBLIC_SENTRY_DSN is set
     initializeAuth();
     fetchCart().catch(() => {});
   }, [fetchCart, initializeAuth]);

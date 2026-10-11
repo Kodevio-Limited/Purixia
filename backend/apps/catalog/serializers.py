@@ -113,7 +113,9 @@ class ProductSerializer(serializers.ModelSerializer):
     features = ProductFeatureSerializer(many=True, read_only=True)
     specifications = ProductSpecificationSerializer(many=True, read_only=True)
     reviews = ProductReviewSerializer(many=True, read_only=True)
-    discounted_price = serializers.ReadOnlyField()
+    # Declared as a DecimalField so it always serializes as a fixed-precision
+    # string (matching `price`) instead of a JSON float.
+    discounted_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model  = Product
@@ -125,6 +127,35 @@ class ProductSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         )
         read_only_fields = ('in_stock', 'created_at', 'updated_at')
+
+
+class ProductListSerializer(serializers.ModelSerializer):
+    """Lightweight product payload for list/grid views.
+
+    Omits the deep nested collections (features, specifications, reviews) that
+    only the detail page needs. This keeps list responses small and avoids the
+    N+1 query storm a full serializer would cause on the catalog page.
+    """
+
+    images = ProductImageSerializer(many=True, read_only=True)
+    discounted_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    review_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = Product
+        fields = (
+            'id', 'category', 'name', 'title', 'price', 'discount_percent',
+            'discounted_price', 'quantity', 'rating', 'in_stock', 'image',
+            'images', 'review_count', 'created_at', 'updated_at',
+        )
+        read_only_fields = ('in_stock', 'created_at', 'updated_at')
+
+    def get_review_count(self, obj):
+        annotated = getattr(obj, 'review_count', None)
+        if annotated is not None:
+            return annotated
+        # Falls back to the prefetched reviews when the view did not annotate.
+        return len(obj.reviews.all())
 
 
 class CategorySerializer(serializers.ModelSerializer):

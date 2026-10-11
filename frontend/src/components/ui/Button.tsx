@@ -5,7 +5,13 @@ import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { Spinner } from './Spinner';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// The drag/animation handlers are omitted so the same props can be forwarded to
+// framer-motion's `motion.button` without a type cast.
+export interface ButtonProps
+  extends Omit<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    'onAnimationStart' | 'onAnimationEnd' | 'onDrag' | 'onDragStart' | 'onDragEnd' | 'onDragOver'
+  > {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
@@ -44,7 +50,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           fullWidth && 'w-full',
           className
         )}
-        {...props as any}
+        {...props}
       >
         {loading && <Spinner size="sm" className="text-current" />}
         {!loading && icon && <span className="inline-flex shrink-0">{icon}</span>}

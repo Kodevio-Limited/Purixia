@@ -1,55 +1,71 @@
 import api from '../lib/axios';
-import { User, Tokens, AuthResponse } from '../types';
+import { clearAccessToken, getAccessToken, setAccessToken } from '../lib/token';
+import {
+  User,
+  Tokens,
+  AuthResponse,
+  RegisterPayload,
+  LoginPayload,
+  PasswordResetRequestPayload,
+  PasswordResetConfirmPayload,
+  EmailVerificationPayload,
+} from '../types';
 
+// Token helpers (names kept for call-site stability). The access token is
+// held in memory only — never localStorage/sessionStorage. The refresh token
+// is an HttpOnly cookie owned by the backend and never touches this code.
 export const saveTokens = (tokens: Tokens): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('access_token', tokens.access);
-    localStorage.setItem('refresh_token', tokens.refresh);
+  if (tokens?.access) {
+    setAccessToken(tokens.access);
   }
 };
 
 export const clearTokens = (): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-  }
+  clearAccessToken();
 };
 
-export const getAccessToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('access_token');
-  }
-  return null;
-};
-
-export const getRefreshToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('refresh_token');
-  }
-  return null;
-};
+export { getAccessToken };
 
 export const isAuthenticated = (): boolean => {
   return !!getAccessToken();
 };
 
 export const authService = {
-  register: async (data: any): Promise<AuthResponse> => {
+  register: async (data: RegisterPayload): Promise<AuthResponse> => {
     const response = await api.post('/api/auth/register/', data);
     return response.data;
   },
 
-  login: async (data: any): Promise<AuthResponse> => {
+  login: async (data: LoginPayload): Promise<AuthResponse> => {
     const response = await api.post('/api/auth/login/', data);
     return response.data;
   },
 
-  logout: async (refresh: string): Promise<void> => {
-    await api.post('/api/auth/logout/', { refresh });
+  // The refresh cookie rides along automatically (withCredentials); no body
+  // needed. The backend blacklists the token and expires the cookie.
+  logout: async (): Promise<void> => {
+    await api.post('/api/auth/logout/', {});
   },
 
-  refreshToken: async (refresh: string): Promise<{ access: string }> => {
-    const response = await api.post('/api/auth/token/refresh/', { refresh });
+  // Silent session restore after a page reload: the cookie is sent, the fresh
+  // access token comes back in the body.
+  refreshSession: async (): Promise<{ access: string }> => {
+    const response = await api.post('/api/auth/token/refresh/', {});
+    return response.data;
+  },
+
+  requestPasswordReset: async (data: PasswordResetRequestPayload): Promise<{ message: string }> => {
+    const response = await api.post('/api/auth/password/reset/', data);
+    return response.data;
+  },
+
+  confirmPasswordReset: async (data: PasswordResetConfirmPayload): Promise<{ message: string }> => {
+    const response = await api.post('/api/auth/password/reset/confirm/', data);
+    return response.data;
+  },
+
+  verifyEmail: async (data: EmailVerificationPayload): Promise<{ message: string }> => {
+    const response = await api.post('/api/auth/verify-email/', data);
     return response.data;
   },
 

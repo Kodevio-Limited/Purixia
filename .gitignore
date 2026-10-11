@@ -1,2 +1,35 @@
 config.bat
 node_modules
+
+# ── Secrets ───────────────────────────────────────────────────────────────────
+# Real environment files must never be committed. Keep .env.example instead.
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ── Databases ─────────────────────────────────────────────────────────────────
+*.sqlite3
+db.sqlite3
+backend/db.sqlite3
+
+# ── Django build output ───────────────────────────────────────────────────────
+backend/staticfiles/
+backend/media_seed/
+logs/
+*.log
+
+# ── Editors / OS ──────────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
+*.swp

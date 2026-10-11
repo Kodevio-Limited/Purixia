@@ -7,6 +7,20 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * A key identifying exactly one checkout attempt, sent as `Idempotency-Key`.
+ *
+ * The API stores it with the order, so a retried request (double click, timeout
+ * then retry) returns the order that already exists instead of placing a second
+ * one. Must satisfy the server's 8-64 char `[A-Za-z0-9._:-]` rule.
+ */
+export function createIdempotencyKey(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
 export function formatPrice(price: string | number): string {
   const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
   if (isNaN(numericPrice)) return '৳ 0.00';
@@ -36,7 +50,7 @@ export function getImageUrl(path: string | null): string {
 
   // Get base URL from env
   // We remove the '/api' suffix if it exists because media is served from the root
-  let baseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? 'http://localhost:8000' : 'http://127.0.0.1:8000');
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? 'http://localhost:8000' : 'http://127.0.0.1:8000');
   
   // Remove trailing slash and '/api' suffix for image base URL
   let cleanBase = baseUrl.trim().replace(/\/+$/, '');

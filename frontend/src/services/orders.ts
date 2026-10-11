@@ -1,9 +1,24 @@
 import api from '../lib/axios';
-import { Order, PlaceOrderPayload, PaginatedResponse } from '../types';
+import { DeliveryOptions, Order, PlaceOrderPayload, PaginatedResponse } from '../types';
 
 export const orderService = {
-  placeOrder: async (payload: PlaceOrderPayload): Promise<Order> => {
-    const response = await api.post('/api/orders/place/', payload);
+  // Authoritative delivery fees from the backend, so the storefront never
+  // hard-codes amounts that the server would compute differently.
+  getDeliveryOptions: async (): Promise<DeliveryOptions> => {
+    const response = await api.get('/api/orders/delivery-options/');
+    return response.data;
+  },
+
+  // `idempotencyKey` identifies one checkout attempt: the server returns the
+  // order it already created for that key rather than placing a second one, so
+  // a double click or a retry after a network timeout is safe.
+  placeOrder: async (
+    payload: PlaceOrderPayload,
+    idempotencyKey?: string,
+  ): Promise<Order> => {
+    const response = await api.post('/api/orders/place/', payload, {
+      headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined,
+    });
     return response.data;
   },
 

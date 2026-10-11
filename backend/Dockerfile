@@ -20,19 +20,23 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy project
 COPY . /app/
 
-# Create directory for logs and static files
-RUN mkdir -p /app/logs /app/staticfiles /app/media
+# Create runtime directories, snapshot shipped media so the entrypoint can seed
+# it into the persistent volume on first boot, and drop root privileges.
+RUN mkdir -p /app/logs /app/staticfiles /app/media /app/media_seed \
+    && cp -a /app/media/. /app/media_seed/ \
+    && chmod +x /app/entrypoint.sh \
+    && addgroup --system app \
+    && adduser --system --ingroup app app \
+    && chown -R app:app /app
 
-# Snapshot shipped product/banner images so the entrypoint can seed them
-# into the persistent media volume on first boot (volume mounts would
-# otherwise hide the files copied into /app/media above).
-RUN mkdir -p /app/media_seed && cp -a /app/media/. /app/media_seed/ 2>/dev/null || true
-
-# Make entrypoint executable
-RUN chmod +x /app/entrypoint.sh
+USER app
 
 # Expose port 8000
 EXPOSE 8000
+
+# Container-level health probe (also used by Docker Compose / Traefik).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD python -c "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health/', timeout=4).status == 200 else 1)"
 
 # Start Gunicorn (runs migrations / seeds DB first via entrypoint)
 CMD ["/app/entrypoint.sh"]

@@ -4,12 +4,10 @@ import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ShoppingCart,
   User,
-  Menu,
-  X,
   Search,
   LogOut,
   Package,
@@ -19,7 +17,6 @@ import { cn } from '../../lib/utils';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
 import { useCategories } from '../../hooks/useCategories';
-import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 
 export function Navbar() {
@@ -28,16 +25,9 @@ export function Navbar() {
   const { count, toggleDrawer } = useCart();
   const { data: categories } = useCategories();
 
-  const [mobileOpen, setMobileOpen] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
-  const [scrolled, setScrolled] = React.useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = React.useState(false);
-
-  const { scrollY } = useScroll();
-  useMotionValueEvent(scrollY, 'change', (latest) => {
-    setScrolled(latest > 10);
-  });
 
   const profileRef = React.useRef<HTMLDivElement>(null);
 

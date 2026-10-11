@@ -4,7 +4,6 @@ import * as React from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Banner } from '../../types';
 import { getImageUrl } from '../../lib/utils';
 import { useBanners } from '../../hooks/useBanners';
 import { Skeleton } from '../ui/Skeleton';

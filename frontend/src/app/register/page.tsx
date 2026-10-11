@@ -8,13 +8,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth, useRegister } from '../../hooks/useAuth';
 import { useCartStore } from '../../stores/cartStore';
+import { getErrorMessage } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
 const registerSchema = z.object({
   username: z.string().optional(),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(10, 'Phone number is too short').max(15, 'Phone number is too long'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  // Matches the backend's Django password validators (min length 8).
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -69,8 +71,9 @@ function RegisterForm() {
     try {
       await registerMutation.mutateAsync(data);
       toast.success('Account created successfully!');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Registration failed');
+    } catch (err: unknown) {
+      // Surfaces backend field errors (e.g. "email: An account with this email already exists.")
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -120,7 +123,7 @@ function RegisterForm() {
               <input
                 type="password"
                 {...register('password')}
-                placeholder="Create a password"
+                placeholder="Create a password (min 8 characters)"
                 className="w-full h-[44px] px-4 bg-white border border-gray-100 rounded-[8px] text-[13px] focus:outline-none focus:border-[#F4B227] transition-colors"
               />
               {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}

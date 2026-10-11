@@ -54,6 +54,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const discount = Number(product.discount_percent) || 0;
   const hasOffer = discount > 0;
   const salePrice = hasOffer ? product.discounted_price : product.price;
+  // Stock is authoritative: never let the buyer add more than exists, and never
+  // let them add an out-of-stock item at all.
+  const inStock = product.in_stock && product.quantity > 0;
+  const maxQuantity = Math.max(1, product.quantity);
   const reviews = product.reviews || [];
   const reviewCount = reviews.length;
   const avgRating = reviewCount > 0
@@ -61,6 +65,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
     : Number(product.rating) || 0;
 
   const handleAddToCart = async () => {
+    if (!inStock) return;
     setAdding(true);
     try {
       await addItem(product.id, quantity, product);
@@ -73,6 +78,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   };
 
   const handleBuyNow = async () => {
+    if (!inStock) return;
     if (!isLoggedIn) {
       try {
         await addItem(product.id, quantity, product);
@@ -156,8 +162,15 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <div>
                 <h1 className="text-[22px] font-bold text-black mb-1 leading-tight">{product.name}</h1>
               </div>
-              <span className="bg-[#ECFDF5] text-[#10B981] text-[9px] font-bold px-2 py-0.5 rounded-[4px] border border-[#D1FAE5] uppercase tracking-wider">
-                In Stock
+              <span
+                className={cn(
+                  'text-[9px] font-bold px-2 py-0.5 rounded-[4px] border uppercase tracking-wider',
+                  inStock
+                    ? 'bg-[#ECFDF5] text-[#10B981] border-[#D1FAE5]'
+                    : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
+                )}
+              >
+                {inStock ? 'In Stock' : 'Out of Stock'}
               </span>
             </div>
 
@@ -214,9 +227,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                  disabled={quantity >= maxQuantity}
                   aria-label="Increase quantity"
-                  className="w-10 h-full flex items-center justify-center text-gray-400 hover:text-black transition-colors"
+                  className="w-10 h-full flex items-center justify-center text-gray-400 hover:text-black transition-colors disabled:opacity-40 disabled:hover:text-gray-400"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -225,16 +239,16 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <div className="flex flex-1 gap-3">
                 <button
                   onClick={handleAddToCart}
-                  disabled={adding}
-                  className="flex-1 h-[44px] bg-black text-white text-[13px] font-bold rounded-[8px] hover:bg-gray-800 transition-all shadow-sm flex items-center justify-center gap-2"
+                  disabled={adding || !inStock}
+                  className="flex-1 h-[44px] bg-black text-white text-[13px] font-bold rounded-[8px] hover:bg-gray-800 transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   Add to Cart
                 </button>
                 <button
                   onClick={handleBuyNow}
-                  disabled={adding}
-                  className="flex-1 h-[44px] bg-[#F4B227] text-white text-[13px] font-bold rounded-[8px] hover:bg-[#D89500] transition-all shadow-sm uppercase tracking-wider"
+                  disabled={adding || !inStock}
+                  className="flex-1 h-[44px] bg-[#F4B227] text-white text-[13px] font-bold rounded-[8px] hover:bg-[#D89500] transition-all shadow-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Buy Now
                 </button>

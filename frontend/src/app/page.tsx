@@ -8,7 +8,6 @@ import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
 import { getImageUrl, formatPrice, cn } from '../lib/utils';
 import { ShoppingCart, Star, ChevronRight } from 'lucide-react';
-import { Button } from '../components/ui/Button';
 
 export default function HomePage() {
   const { data: banners } = useBanners();
@@ -161,10 +160,21 @@ export default function HomePage() {
               </div>
               <div className="p-3.5 flex flex-col flex-1 gap-1">
                 <h3 className="text-[13px] font-semibold text-black line-clamp-1 group-hover:text-[#F4B227] transition-colors">{product.name}</h3>
-                <div className="flex gap-0.5">
+                <div className="flex items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="w-3 h-3 fill-[#F4B227] text-[#F4B227]" />
+                    <Star
+                      key={s}
+                      className={cn(
+                        'w-3 h-3',
+                        s <= Math.round(Number(product.rating) || 0)
+                          ? 'fill-[#F4B227] text-[#F4B227]'
+                          : 'fill-gray-200 text-gray-200'
+                      )}
+                    />
                   ))}
+                  <span className="text-[10px] text-gray-400 ml-0.5">
+                    ({Number(product.rating || 0).toFixed(1)})
+                  </span>
                 </div>
                 <div className="flex justify-between items-center mt-auto pt-1.5">
                   <div className="flex items-baseline gap-1.5">

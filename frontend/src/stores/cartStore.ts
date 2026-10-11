@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { CartItem, CartResponse } from '../types';
+import { CartItem, CartProductInput, CartResponse } from '../types';
 
 const STORAGE_KEY = 'purixia_cart';
 
@@ -29,15 +29,13 @@ function enrichItem(item: CartItem): CartItem {
   return { ...item, total_price: (parseFloat(item.price) * item.quantity).toFixed(2) };
 }
 
-function salePriceOf(product: any): string {
+function salePriceOf(product: CartProductInput): string {
   // Prefer the admin-discounted price when the backend provides one.
-  const discounted = product?.discounted_price;
-  const base = product?.price;
-  const pick = discounted ?? base;
+  const pick = product.discounted_price ?? product.price;
   return String(pick ?? '0');
 }
 
-function toCartItem(product: any, quantity: number): CartItem {
+function toCartItem(product: CartProductInput, quantity: number): CartItem {
   const unitPrice = salePriceOf(product);
   return enrichItem({
     product: { id: product.id, name: product.name, price: unitPrice, image: product.image || null },
@@ -59,8 +57,8 @@ interface CartState {
   closeDrawer: () => void;
   toggleDrawer: () => void;
   fetchCart: () => Promise<void>;
-  addItem: (productId: number | string, quantity?: number, product?: any) => Promise<void>;
-  addItemSilent: (productId: number | string, quantity?: number, product?: any) => Promise<void>;
+  addItem: (productId: number | string, quantity?: number, product?: CartProductInput) => Promise<void>;
+  addItemSilent: (productId: number | string, quantity?: number, product?: CartProductInput) => Promise<void>;
   updateItem: (productId: number | string, quantity: number) => Promise<void>;
   removeItem: (productId: number | string) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -98,7 +96,7 @@ export const useCartStore = create<CartState>((set, get) => {
       }
     },
 
-    addItem: async (productId, quantity = 1, product?: any) => {
+    addItem: async (productId, quantity = 1, product?: CartProductInput) => {
       set({ loading: true });
       try {
         const { items } = get();
@@ -125,7 +123,7 @@ export const useCartStore = create<CartState>((set, get) => {
       }
     },
 
-    addItemSilent: async (productId, quantity = 1, product?: any) => {
+    addItemSilent: async (productId, quantity = 1, product?: CartProductInput) => {
       set({ loading: true });
       try {
         const { items } = get();

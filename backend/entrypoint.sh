@@ -26,14 +26,27 @@ if [ -d /app/media_seed ] && ! find /app/media -type f 2>/dev/null | grep -q .; 
   cp -a /app/media_seed/. /app/media/
 fi
 
-echo ">> Running migrations"
-python manage.py migrate --noinput --settings=core.settings.prod
+# Migrations run from every replica at boot would race when scaling out.
+# Keep MIGRATE_ON_BOOT=1 (default) for the single-replica / first boot, and set
+# MIGRATE_ON_BOOT=0 on the extra replicas once the schema is applied.
+if [ "${MIGRATE_ON_BOOT:-1}" = "0" ]; then
+  echo ">> MIGRATE_ON_BOOT=0 — skipping migrate (the one-shot migrate service owns the schema)"
+else
+  echo ">> Running migrations"
+  python manage.py migrate --noinput --settings=core.settings.prod
+fi
 
-echo ">> Ensuring admin superuser exists"
-python manage.py ensure_admin --settings=core.settings.prod 2>/dev/null || true
+# Admin bootstrap also mutates shared state (it creates/updates a user row), so
+# it is gated the same way: exactly one process should do it, not every replica.
+if [ "${BOOTSTRAP_ON_BOOT:-1}" = "0" ]; then
+  echo ">> BOOTSTRAP_ON_BOOT=0 — skipping ensure_admin (owned by the migrate service)"
+else
+  echo ">> Ensuring admin superuser exists"
+  python manage.py ensure_admin --settings=core.settings.prod 2>/dev/null || true
+fi
 
 echo ">> Collecting static files"
 python manage.py collectstatic --noinput --settings=core.settings.prod 2>/dev/null || true
 
 echo ">> Starting Gunicorn"
-exec gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3
+exec gunicorn core.wsgi:application --config /app/gunicorn.conf.py

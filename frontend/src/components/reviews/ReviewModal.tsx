@@ -17,20 +17,12 @@ interface ReviewModalProps {
 export function ReviewModal({ open, onClose, productId, productName }: ReviewModalProps) {
   const submitReview = useSubmitReview();
 
+  // The parent mounts this component only while the modal is open, so a fresh
+  // mount already starts from these defaults — no reset effect needed.
   const [rating, setRating] = React.useState(5);
   const [hoveredRating, setHoveredRating] = React.useState(0);
   const [title, setTitle] = React.useState('');
   const [comment, setComment] = React.useState('');
-
-  // Reset the form each time the modal is opened
-  React.useEffect(() => {
-    if (open) {
-      setRating(5);
-      setHoveredRating(0);
-      setTitle('');
-      setComment('');
-    }
-  }, [open]);
 
   const activeRating = hoveredRating > 0 ? hoveredRating : rating;
   const canSubmit = rating > 0 && (comment.trim().length > 0 || title.trim().length > 0);

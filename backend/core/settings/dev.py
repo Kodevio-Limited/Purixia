@@ -26,6 +26,19 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
 
+# ── Refresh cookie over plain HTTP ────────────────────────────────────────────
+# A `Secure` cookie is discarded by the browser on http://localhost, so dev must
+# not set it. Production forces it back on (core/settings/prod.py).
+REFRESH_COOKIE_SECURE = False
+REFRESH_COOKIE_SAMESITE = 'Lax'
+
+# ── Email: print reset / verification links to the console ────────────────────
+# Set EMAIL_HOST in .env to exercise the real SMTP path locally.
+EMAIL_BACKEND = config(
+    'EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend',
+)
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
+
 # ── DRF: add Browsable API in dev only ────────────────────────────────────────
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (  # noqa: F405
     'rest_framework.renderers.JSONRenderer',

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { User } from '../types';
-import { authService, saveTokens, clearTokens, getAccessToken, getRefreshToken } from '../services/auth';
+import { User, RegisterPayload } from '../types';
+import { authService, saveTokens, clearTokens, getAccessToken } from '../services/auth';
+import { setAccessToken } from '../lib/token';
 import { useCartStore } from './cartStore';
 
 interface AuthState {
@@ -11,11 +12,11 @@ interface AuthState {
   clearUser: () => void;
   initAuth: () => Promise<void>;
   login: (email: string, password: string) => Promise<User>;
-  register: (data: any) => Promise<User>;
+  register: (data: RegisterPayload) => Promise<User>;
   logout: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoggedIn: false,
   loading: true,
@@ -26,17 +27,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initAuth: async () => {
     set({ loading: true });
-    const token = getAccessToken();
-    if (token) {
-      try {
-        const user = await authService.me();
-        set({ user, isLoggedIn: true });
-        await useCartStore.getState().fetchCart();
-      } catch (error) {
-        // Token might be expired or invalid, clear it
-        clearTokens();
-        set({ user: null, isLoggedIn: false });
+    try {
+      if (!getAccessToken()) {
+        // A reload wipes the in-memory token. Restore the session silently:
+        // the HttpOnly refresh cookie goes along automatically and a fresh
+        // access token comes back. Throws for anonymous visitors (no cookie),
+        // which simply means "not logged in" — never a redirect.
+        const { access } = await authService.refreshSession();
+        setAccessToken(access);
       }
+      const user = await authService.me();
+      set({ user, isLoggedIn: true });
+      await useCartStore.getState().fetchCart();
+    } catch {
+      // No session (or a dead one): stay logged out without redirecting.
+      clearTokens();
+      set({ user: null, isLoggedIn: false });
     }
     set({ loading: false });
   },
@@ -79,13 +85,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     set({ loading: true });
-    const refresh = getRefreshToken();
-    if (refresh) {
-      try {
-        await authService.logout(refresh);
-      } catch (error) {
-        console.error('Failed to blacklist token on backend logout', error);
-      }
+    try {
+      // Cookie + access header ride along; the backend blacklists the refresh
+      // token and expires the cookie.
+      await authService.logout();
+    } catch (error) {
+      console.error('Failed to blacklist token on backend logout', error);
     }
     clearTokens();
     set({ user: null, isLoggedIn: false, loading: false });

@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth, useLogin } from '../../hooks/useAuth';
-import { Button } from '../../components/ui/Button';
+import { getErrorMessage } from '../../lib/utils';
 import { LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Suspense } from 'react';
@@ -51,10 +51,8 @@ function LoginContent() {
       await loginMutation.mutateAsync(values);
       toast.success('Welcome back!');
       router.push(redirectUrl);
-    } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.detail || err.response?.data?.non_field_errors?.[0] || 'Login failed';
-      toast.error(errorMsg);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -82,7 +80,7 @@ function LoginContent() {
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
                 <label className="text-[13px] font-semibold text-black">Password</label>
-                <Link href="#" className="text-[11px] text-[#666666] hover:text-[#F4B227]">Forgot Password?</Link>
+                <Link href="/forgot-password" className="text-[11px] text-[#666666] hover:text-[#F4B227]">Forgot Password?</Link>
               </div>
               <input
                 type="password"
@@ -108,7 +106,7 @@ function LoginContent() {
           </form>
 
           <p className="text-center text-[13px] text-[#666666] mt-6">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               href={redirectUrl ? `/register?redirect=${encodeURIComponent(redirectUrl)}` : '/register'}
               className="font-bold text-[#F4B227] hover:underline"
