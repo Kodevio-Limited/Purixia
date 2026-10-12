@@ -1,8 +1,12 @@
+import os
 from decimal import Decimal
+from io import StringIO
+from unittest import mock
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.management import call_command
 from django.test import override_settings
 from rest_framework.test import APITestCase
 
@@ -341,3 +345,63 @@ class EmailOrUsernameAuthTests(APITestCase):
     def test_admin_login_with_email(self):
         User.objects.create_superuser(username='boss', email='boss@example.com', password=PASSWORD)
         self.assertTrue(self.client.login(username='boss@example.com', password=PASSWORD))
+
+
+class EnsureAdminCommandTests(APITestCase):
+    """ensure_admin must never clobber a working admin on a normal deploy."""
+
+    ENV = {
+        'ADMIN_USERNAME': 'rootadmin',
+        'ADMIN_EMAIL': 'root@example.com',
+        'ADMIN_PASSWORD': 'AdminPass!2345',
+    }
+
+    def _run(self, **overrides):
+        env = {**self.ENV, **overrides}
+        out = StringIO()
+        with mock.patch.dict(os.environ, env, clear=False):
+            call_command('ensure_admin', stdout=out)
+        return out.getvalue()
+
+    def test_creates_when_missing(self):
+        self._run(ADMIN_RESET_PASSWORD='0')
+        user = User.objects.get(username='rootadmin')
+        self.assertTrue(user.is_superuser and user.is_staff and user.is_active)
+        self.assertTrue(user.check_password('AdminPass!2345'))
+
+    def test_existing_password_is_left_unchanged_by_default(self):
+        User.objects.create_superuser(
+            username='rootadmin', email='old@example.com', password='OldPass!2345',
+        )
+        self._run(ADMIN_RESET_PASSWORD='0')
+        user = User.objects.get(username='rootadmin')
+        # The whole point: a redeploy does NOT change the admin's password.
+        self.assertTrue(user.check_password('OldPass!2345'))
+        self.assertFalse(user.check_password('AdminPass!2345'))
+
+    def test_reset_flag_changes_the_password(self):
+        User.objects.create_superuser(
+            username='rootadmin', email='old@example.com', password='OldPass!2345',
+        )
+        self._run(ADMIN_RESET_PASSWORD='1')
+        user = User.objects.get(username='rootadmin')
+        self.assertTrue(user.check_password('AdminPass!2345'))
+        self.assertEqual(user.email, 'root@example.com')
+
+    def test_reset_flag_reactivates_and_promotes(self):
+        u = User.objects.create_user(
+            username='rootadmin', email='x@example.com', password='OldPass!2345',
+        )
+        u.is_active = False
+        u.is_staff = False
+        u.save(update_fields=['is_active', 'is_staff'])
+        self._run(ADMIN_RESET_PASSWORD='1')
+        u.refresh_from_db()
+        self.assertTrue(u.is_active and u.is_staff and u.is_superuser)
+
+    def test_incomplete_env_skips(self):
+        with mock.patch.dict(os.environ, {'ADMIN_USERNAME': '', 'ADMIN_EMAIL': '',
+                                          'ADMIN_PASSWORD': ''}, clear=False):
+            out = StringIO()
+            call_command('ensure_admin', stdout=out)
+        self.assertFalse(User.objects.filter(username='rootadmin').exists())

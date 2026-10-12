@@ -46,12 +46,21 @@ Dokploy, never from a file).
 | `CORS_ALLOWED_ORIGINS` | backend, migrate | Must contain the storefront origins. Default: `https://purixiabd.com,https://www.purixiabd.com` |
 | `REDIS_URL` | backend, migrate | Required so throttles/caches are shared across replicas. Default: `redis://redis:6379/0` |
 
-### Admin bootstrap (first deploy)
+### Admin bootstrap (runs on every deploy)
+
+The `migrate` service runs `ensure_admin` on every deploy. It **creates** the
+account if it is missing and otherwise leaves it alone — the account lives in
+Postgres, so it (and its password) persists across redeploys. You never need to
+re-run anything after a deploy.
 
 | Variable | Notes |
 |---|---|
-| `ADMIN_USERNAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Superuser created by the `migrate` service |
-| `ADMIN_RESET_PASSWORD=1` | Set **once** to (re)set the admin password, then remove it or set `0` |
+| `ADMIN_USERNAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Seed for the superuser account |
+| `ADMIN_RESET_PASSWORD` | **Leave `0`.** Set to `1` for exactly one deploy to force-reset the existing admin's password; the command logs a warning when it does. Leaving it at `1` resets the password on **every** deploy. |
+
+If you manage the admin account by hand instead, clear `ADMIN_USERNAME` /
+`ADMIN_EMAIL` / `ADMIN_PASSWORD` (the command then skips entirely) and use
+`python manage.py changepassword <username>` inside a backend container.
 
 ### Email (optional, recommended)
 
@@ -74,6 +83,26 @@ log instead of being delivered (ordering is never blocked either way).
 `MAX_OPEN_ORDERS` (1), `GUNICORN_WORKERS` (4), `GUNICORN_THREADS` (8),
 `DB_CONN_MAX_AGE` (120), `REFRESH_COOKIE_*` (name/path/SameSite; `Secure` is
 forced on in production — do not override it off).
+
+### Ordering limits
+
+Two variables cap how many orders one registered account may place. Both are
+per user and shared across replicas via Redis.
+
+| Variable | Default | Effect |
+|---|---|---|
+| `MAX_OPEN_ORDERS` | `1` | Most orders still `pending`/`confirmed` at once; `409` above it. **`0` disables the cap.** |
+| `THROTTLE_ORDER` | `10/hour` | Max order placements per hour; `429` above it. |
+
+To let a registered user order as many as they want while keeping a safety net
+against a runaway script, set:
+```
+MAX_OPEN_ORDERS=0
+THROTTLE_ORDER=100/hour
+```
+Per-order quantity and number of products are already unlimited (bounded only by
+`Product.quantity` in stock). There is no guest checkout — every order is from a
+registered user, so these limits apply to all customers.
 
 ## 3. Deploying
 
@@ -188,7 +217,8 @@ ever lived in them as public:
       once; every customer is logged out and must sign in again. Announce it.
 - [ ] `POSTGRES_PASSWORD` (and `DB_PASSWORD` if it differs) — change in
       Dokploy, redeploy. Brief downtime while backend reconnects.
-- [ ] Admin password — set `ADMIN_RESET_PASSWORD=1` for one deploy, then remove it.
+- [ ] Admin password — set `ADMIN_RESET_PASSWORD=1` for one deploy, then set it
+      back to `0` (leaving it at `1` resets the admin password every deploy).
 - [ ] SMTP credentials (`EMAIL_HOST_PASSWORD`) — rotate at the provider, update Dokploy.
 - [ ] Never commit `.env` or `*.sqlite3` again (both are git-ignored); never
       print secret values into logs, chat, or tickets.

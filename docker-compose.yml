@@ -34,10 +34,13 @@
 # Required env vars in Dokploy (compose service -> Environment):
 #   SECRET_KEY=<long random string>
 #   POSTGRES_PASSWORD=<strong db password>   (single source of DB credentials)
-#      ADMIN_USERNAME=<admin username>
+#   ADMIN_USERNAME=<admin username>
 #   ADMIN_EMAIL=<admin email>
 #   ADMIN_PASSWORD=<admin password>
-#   ADMIN_RESET_PASSWORD=1                    (first boot only, then remove/0)
+#   ADMIN_RESET_PASSWORD=0                    (leave 0. Set 1 ONLY to force-reset
+#      the admin password on the next deploy; the migrate service runs
+#      ensure_admin every deploy, so leaving it at 1 resets the password
+#      every time.)
 #
 #   These are injected into the containers directly from this environment —
 #   there is no committed .env file. backend/.env.example is the local-dev

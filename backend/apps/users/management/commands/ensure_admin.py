@@ -1,49 +1,64 @@
 import os
+
 from django.core.management.base import BaseCommand
+
 from apps.users.models import User
 
 
 class Command(BaseCommand):
-    help = 'Create a superuser from env vars if none exists (or update password if ADMIN_RESET_PASSWORD=1)'
+    help = (
+        'Ensure the admin account from env vars exists. Creates it if missing; '
+        'resets its password ONLY when ADMIN_RESET_PASSWORD=1. With that flag '
+        'unset or 0 an existing account is left completely untouched, so the '
+        'admin and its password persist across redeploys.'
+    )
 
     def handle(self, *args, **options):
-        username = os.environ.get('ADMIN_USERNAME', '')
-        email = os.environ.get('ADMIN_EMAIL', '')
+        username = os.environ.get('ADMIN_USERNAME', '').strip()
+        email = os.environ.get('ADMIN_EMAIL', '').strip()
         password = os.environ.get('ADMIN_PASSWORD', '')
-        reset = os.environ.get('ADMIN_RESET_PASSWORD', '') == '1'
+        # The only condition under which an existing password is ever changed.
+        reset = os.environ.get('ADMIN_RESET_PASSWORD', '').strip() == '1'
 
         if not username or not email or not password:
             self.stdout.write(self.style.WARNING(
-                'ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD not all set — skipping.'
+                'ensure_admin: ADMIN_USERNAME/ADMIN_EMAIL/ADMIN_PASSWORD are not '
+                'all set — skipping. Existing admin accounts are unaffected.'
             ))
             return
 
-        # Reset existing user's password
-        if reset:
-            try:
-                user = User.objects.get(username=username)
-                user.set_password(password)
-                user.is_staff = True
-                user.is_superuser = True
-                user.email = email
-                user.save()
-                self.stdout.write(self.style.SUCCESS(
-                    f'Reset password for superuser "{username}" and ensured staff/superuser flags.'
-                ))
-                return
-            except User.DoesNotExist:
-                pass  # fall through to create
+        exists = User.objects.filter(username=username).exists()
 
-        # Create if no superuser exists with this username
-        if User.objects.filter(username=username).exists():
-            self.stdout.write(f'User "{username}" already exists — skipping creation.')
+        if reset:
+            if not exists:
+                self._create(username, email, password)
+                return
+            user = User.objects.get(username=username)
+            user.set_password(password)
+            user.is_staff = True
+            user.is_superuser = True
+            user.is_active = True
+            user.email = email
+            user.save()
+            self.stdout.write(self.style.WARNING(
+                f'ensure_admin: RESET the password for "{username}" because '
+                f'ADMIN_RESET_PASSWORD=1. Set it back to 0, or the next deploy '
+                f'will reset it again.'
+            ))
             return
 
-        user = User.objects.create_superuser(
-            username=username,
-            email=email,
-            password=password,
-        )
+        if exists:
+            # The normal, safe path: an admin created once keeps working forever.
+            self.stdout.write(
+                f'ensure_admin: "{username}" already exists — password left '
+                f'unchanged (set ADMIN_RESET_PASSWORD=1 only to force a reset).'
+            )
+            return
+
+        self._create(username, email, password)
+
+    def _create(self, username, email, password):
+        User.objects.create_superuser(username=username, email=email, password=password)
         self.stdout.write(self.style.SUCCESS(
-            f'Created superuser "{username}" ({email})'
+            f'ensure_admin: created superuser "{username}" ({email})'
         ))
