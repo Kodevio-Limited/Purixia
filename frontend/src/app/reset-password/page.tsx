@@ -55,26 +55,26 @@ function ResetPasswordContent() {
   return (
     <div className="bg-white flex justify-center px-4 py-[60px] font-poppins">
       <div className="max-w-[440px] w-full">
-        <div className="bg-white rounded-[20px] shadow-[0px_10px_40px_rgba(0,0,0,0.05)] p-8 border border-gray-50">
+        <div className="bg-white rounded-[20px] shadow-[0px_10px_40px_rgba(0,0,0,0.05)] p-8 border border-neutral-100">
           <div className="text-center mb-6">
             <h1 className="text-[28px] font-bold text-black mb-1">Choose a New Password</h1>
-            <p className="text-[13px] text-[#666666]">
+            <p className="text-[13px] text-neutral-700">
               {done ? 'Your password has been reset' : 'This link works once — pick a strong password'}
             </p>
           </div>
 
           {done ? (
             <div className="text-center space-y-4">
-              <p className="text-[13px] text-[#333333]">You can now sign in with your new password.</p>
+              <p className="text-[13px] text-navy">You can now sign in with your new password.</p>
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center w-full h-[48px] bg-[#F4B227] text-white font-bold text-[16px] rounded-[8px] hover:bg-[#D89500] transition-colors"
+                className="inline-flex items-center justify-center w-full h-[48px] bg-orange text-white font-bold text-[16px] rounded-[8px] hover:bg-orange-700 transition-colors"
               >
                 Sign In
               </Link>
             </div>
           ) : !uid || !token ? (
-            <p className="text-[13px] text-red-500 text-center">
+            <p className="text-[13px] text-error text-center">
               This reset link is incomplete. Please open the full link from your email.
             </p>
           ) : (
@@ -85,9 +85,9 @@ function ResetPasswordContent() {
                   type="password"
                   {...register('new_password')}
                   placeholder="At least 8 characters"
-                  className="w-full h-[44px] px-4 bg-white border border-gray-100 rounded-[8px] text-[13px] focus:outline-none focus:border-[#F4B227] transition-colors"
+                  className="w-full h-[44px] px-4 bg-white border border-neutral-100 rounded-[8px] text-[13px] focus:outline-none focus:border-orange transition-colors"
                 />
-                {errors.new_password && <p className="text-xs text-red-500">{errors.new_password.message}</p>}
+                {errors.new_password && <p className="text-xs text-error">{errors.new_password.message}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -96,15 +96,15 @@ function ResetPasswordContent() {
                   type="password"
                   {...register('confirm_password')}
                   placeholder="Repeat the new password"
-                  className="w-full h-[44px] px-4 bg-white border border-gray-100 rounded-[8px] text-[13px] focus:outline-none focus:border-[#F4B227] transition-colors"
+                  className="w-full h-[44px] px-4 bg-white border border-neutral-100 rounded-[8px] text-[13px] focus:outline-none focus:border-orange transition-colors"
                 />
-                {errors.confirm_password && <p className="text-xs text-red-500">{errors.confirm_password.message}</p>}
+                {errors.confirm_password && <p className="text-xs text-error">{errors.confirm_password.message}</p>}
               </div>
 
               <button
                 type="submit"
                 disabled={pending}
-                className="w-full h-[48px] bg-[#F4B227] text-white font-bold text-[16px] rounded-[8px] hover:bg-[#D89500] transition-colors shadow-sm mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full h-[48px] bg-orange text-white font-bold text-[16px] rounded-[8px] hover:bg-orange-700 transition-colors shadow-sm mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {pending ? (
                   'Saving...'
@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-[#F4B227] border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

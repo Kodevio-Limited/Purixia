@@ -6,14 +6,15 @@ import Image from 'next/image';
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#FFFBEB] pt-[60px] pb-[30px] px-4 sm:px-6 md:px-[40px] lg:px-[80px] border-t border-gray-100">
+    <footer className="w-full bg-navy pt-[60px] pb-[30px] px-4 sm:px-6 md:px-[40px] lg:px-[80px] border-t border-navy-700">
       <div className="max-w-[1440px] mx-auto w-full grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-[40px]">
         {/* Company Info */}
         <div className="col-span-1 space-y-4">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/footerLogo-Photoroom.png" alt="Purixia BD" width={110} height={64} className="object-contain" />
+            {/* Dark-background logo variant: orange symbol + white wordmark */}
+            <Image src="/brand-logo-dark.png" alt="Purixia BD" width={150} height={29} className="object-contain" />
           </Link>
-          <p className="text-[13px] text-[#666666] leading-relaxed font-poppins">
+          <p className="text-[13px] text-navy-100 leading-relaxed font-poppins">
           Purixia BD | The Pure Paragon.
           Built on integrity, driven by trust. Your one-stop destination for authentic tech, from smart gadgets to everyday essentials — small beginnings, big promises.
           </p>
@@ -21,39 +22,39 @@ export function Footer() {
 
         {/* About Links */}
         <div className="col-span-1">
-          <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">About</h3>
+          <h3 className="text-[16px] font-bold text-white mb-4 font-poppins uppercase tracking-wider">About</h3>
           <ul className="space-y-3">
-            <li><Link href="/" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Home</Link></li>
-            <li><Link href="/products" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Categories</Link></li>
-            <li><Link href="/faq" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">FAQ</Link></li>
+            <li><Link href="/" className="text-navy-100 hover:text-orange text-[13px] font-poppins transition-colors">Home</Link></li>
+            <li><Link href="/products" className="text-navy-100 hover:text-orange text-[13px] font-poppins transition-colors">Categories</Link></li>
+            <li><Link href="/faq" className="text-navy-100 hover:text-orange text-[13px] font-poppins transition-colors">FAQ</Link></li>
           </ul>
         </div>
 
         {/* Contact Links */}
         <div className="col-span-1">
-          <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">Contact</h3>
+          <h3 className="text-[16px] font-bold text-white mb-4 font-poppins uppercase tracking-wider">Contact</h3>
           <ul className="space-y-3">
-            <li className="text-[#666666] text-[13px] font-poppins">Email: purixiabd@gmail.com</li>
-            <li className="text-[#666666] text-[13px] font-poppins">
+            <li className="text-navy-100 text-[13px] font-poppins">Email: purixiabd@gmail.com</li>
+            <li className="text-navy-100 text-[13px] font-poppins">
               Phone: +880 1334-177276
             </li>
-            <li className="text-[#666666] text-[13px] font-poppins">Address: Dhaka, Bangladesh</li>
+            <li className="text-navy-100 text-[13px] font-poppins">Address: Dhaka, Bangladesh</li>
           </ul>
         </div>
 
         {/* Support Links */}
         <div className="col-span-1">
-          <h3 className="text-[16px] font-bold text-black mb-4 font-poppins uppercase tracking-wider">Support</h3>
+          <h3 className="text-[16px] font-bold text-white mb-4 font-poppins uppercase tracking-wider">Support</h3>
           <ul className="space-y-3">
-            <li><Link href="/privacy-policy" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Privacy Policy</Link></li>
-            <li><Link href="/terms-and-conditions" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Terms & Condition</Link></li>
-            <li><Link href="/contact-us" className="text-[#666666] hover:text-[#F4B227] text-[13px] font-poppins">Contact Us</Link></li>
+            <li><Link href="/privacy-policy" className="text-navy-100 hover:text-orange text-[13px] font-poppins transition-colors">Privacy Policy</Link></li>
+            <li><Link href="/terms-and-conditions" className="text-navy-100 hover:text-orange text-[13px] font-poppins transition-colors">Terms & Condition</Link></li>
+            <li><Link href="/contact-us" className="text-navy-100 hover:text-orange text-[13px] font-poppins transition-colors">Contact Us</Link></li>
           </ul>
         </div>
       </div>
 
-      <div className="max-w-[1440px] mx-auto w-full mt-[60px] pt-[20px] border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <p className="text-[12px] text-[#666666] font-poppins">
+      <div className="max-w-[1440px] mx-auto w-full mt-[60px] pt-[20px] border-t border-navy-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p className="text-[12px] text-navy-100 font-poppins">
           © 2026 Purixia BD. All rights reserved.
         </p>
         <div className="flex items-center gap-6">
@@ -62,7 +63,7 @@ export function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Facebook"
-            className="text-black hover:text-[#F4B227] transition-colors"
+            className="text-white hover:text-orange transition-colors"
           >
             <svg
               viewBox="0 0 24 24"
@@ -78,7 +79,7 @@ export function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="WhatsApp - 01334 177275"
-            className="text-black hover:text-[#25D366] transition-colors"
+            className="text-white hover:text-whatsapp transition-colors"
           >
             <svg
               viewBox="0 0 24 24"

@@ -16,7 +16,7 @@ export function Skeleton({ className, variant = 'text', ...props }: SkeletonProp
   return (
     <div
       className={cn(
-        'animate-pulse bg-gray-200/80',
+        'animate-pulse bg-neutral-300/80',
         variants[variant],
         className
       )}

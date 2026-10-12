@@ -39,7 +39,7 @@ export default function OrderDetailPage() {
   if (isChecking || !isLoggedIn) {
     return (
       <PageWrapper className="flex flex-col items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange" />
       </PageWrapper>
     );
   }
@@ -47,7 +47,7 @@ export default function OrderDetailPage() {
   if (isNaN(id)) {
     return (
       <PageWrapper className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <h2 className="text-xl font-bold text-gray-900">Invalid Order ID</h2>
+        <h2 className="text-xl font-bold text-navy">Invalid Order ID</h2>
         <Button variant="primary" onClick={() => router.push('/orders')} className="mt-4">
           Back to Orders
         </Button>
@@ -58,8 +58,8 @@ export default function OrderDetailPage() {
   if (isError) {
     return (
       <PageWrapper className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <h2 className="text-xl font-bold text-red-600">Order not found</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-error">Order not found</h2>
+        <p className="text-sm text-neutral-500 mt-1">
           We could not find the requested order in your account history.
         </p>
         <Button variant="primary" onClick={() => router.push('/orders')} className="mt-4">
@@ -84,7 +84,7 @@ export default function OrderDetailPage() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => router.push('/orders')}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-950 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-500 hover:text-navy transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Orders
@@ -105,12 +105,12 @@ export default function OrderDetailPage() {
         order && (
           <div className="space-y-8">
             {/* Title card */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-neutral-100 pb-6">
               <div>
-                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                <h1 className="text-3xl font-extrabold text-navy tracking-tight">
                   Order #{order.id}
                 </h1>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   Placed on{' '}
                   {new Date(order.created_at).toLocaleString('en-US', {
                     year: 'numeric',
@@ -131,27 +131,27 @@ export default function OrderDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Order Items */}
               <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
-                  <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                    <ShoppingBag className="w-4 h-4 text-violet-600" />
+                <div className="bg-white border border-neutral-100 rounded-3xl p-6 shadow-sm space-y-4">
+                  <h2 className="text-base font-bold text-navy flex items-center gap-2">
+                    <ShoppingBag className="w-4 h-4 text-orange" />
                     Items Summary
                   </h2>
 
-                  <div className="divide-y divide-gray-50">
+                  <div className="divide-y divide-neutral-100">
                     {order.items?.map((item) => {
                       const alreadyReviewed = reviewedProductIds.has(item.product);
                       return (
                         <div key={item.id} className="py-4 flex justify-between items-center gap-4">
                           <div className="min-w-0">
-                            <p className="font-bold text-gray-900 text-sm truncate">
+                            <p className="font-bold text-navy text-sm truncate">
                               {item.product_name}
                             </p>
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs text-neutral-500 mt-0.5">
                               {formatPrice(item.unit_price)} x {item.quantity}
                             </p>
                             {isDelivered && (
                               alreadyReviewed ? (
-                                <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-bold text-emerald-600">
+                                <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-bold text-success">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   Reviewed
                                 </span>
@@ -159,7 +159,7 @@ export default function OrderDetailPage() {
                                 <button
                                   type="button"
                                   onClick={() => setReviewModalProduct({ id: item.product, name: item.product_name })}
-                                  className="inline-flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full bg-[#F4B227]/10 text-[#F4B227] text-[11px] font-bold hover:bg-[#F4B227] hover:text-white transition-colors"
+                                  className="inline-flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full bg-orange/10 text-orange text-[11px] font-bold hover:bg-orange hover:text-white transition-colors"
                                 >
                                   <Star className="w-3.5 h-3.5" />
                                   Write a Review
@@ -167,7 +167,7 @@ export default function OrderDetailPage() {
                               )
                             )}
                           </div>
-                          <span className="font-extrabold text-sm text-gray-900 shrink-0">
+                          <span className="font-extrabold text-sm text-navy shrink-0">
                             {formatPrice(item.subtotal)}
                           </span>
                         </div>
@@ -177,19 +177,19 @@ export default function OrderDetailPage() {
                 </div>
 
                 {/* Shipping Details */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
-                  <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-violet-600" />
+                <div className="bg-white border border-neutral-100 rounded-3xl p-6 shadow-sm space-y-4">
+                  <h2 className="text-base font-bold text-navy flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-orange" />
                     Shipping Details
                   </h2>
 
                   <div className="text-sm space-y-2">
-                    <p className="font-bold text-gray-900">{order.shipping_info?.name}</p>
-                    <p className="text-gray-600">Phone: {order.shipping_info?.phone}</p>
+                    <p className="font-bold text-navy">{order.shipping_info?.name}</p>
+                    <p className="text-neutral-700">Phone: {order.shipping_info?.phone}</p>
                     {order.shipping_info?.email && (
-                      <p className="text-gray-600">Email: {order.shipping_info.email}</p>
+                      <p className="text-neutral-700">Email: {order.shipping_info.email}</p>
                     )}
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-neutral-700 leading-relaxed">
                       Address: {order.shipping_info?.address}
                     </p>
                   </div>
@@ -198,17 +198,17 @@ export default function OrderDetailPage() {
 
               {/* Delivery and Totals Summary */}
               <div className="space-y-6">
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-5">
-                  <h3 className="font-bold text-gray-900 text-base">Payment & Delivery</h3>
+                <div className="bg-white border border-neutral-100 rounded-3xl p-6 shadow-sm space-y-5">
+                  <h3 className="font-bold text-navy text-base">Payment & Delivery</h3>
 
                   {/* Delivery Pill info */}
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                    <Truck className="w-4 h-4 text-violet-600 shrink-0" />
+                  <div className="flex items-center gap-3 p-3 bg-surface rounded-2xl">
+                    <Truck className="w-4 h-4 text-orange shrink-0" />
                     <div>
-                      <p className="text-xs font-semibold text-gray-900 capitalize">
+                      <p className="text-xs font-semibold text-navy capitalize">
                         {order.delivery_type} Delivery
                       </p>
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-[10px] text-neutral-500">
                         {order.delivery_type === 'inside'
                           ? '1 - 2 business days'
                           : '3 - 5 business days'}
@@ -217,29 +217,29 @@ export default function OrderDetailPage() {
                   </div>
 
                   {/* Payment Pill info */}
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                    <Landmark className="w-4 h-4 text-violet-600 shrink-0" />
+                  <div className="flex items-center gap-3 p-3 bg-surface rounded-2xl">
+                    <Landmark className="w-4 h-4 text-orange shrink-0" />
                     <div>
-                      <p className="text-xs font-semibold text-gray-900 capitalize">
+                      <p className="text-xs font-semibold text-navy capitalize">
                         Cash on Delivery
                       </p>
-                      <p className="text-[10px] text-gray-400">Pay when package arrives</p>
+                      <p className="text-[10px] text-neutral-500">Pay when package arrives</p>
                     </div>
                   </div>
 
                   {/* Pricing table */}
-                  <div className="border-t border-gray-100 pt-5 space-y-3">
-                    <div className="flex justify-between text-xs text-gray-500">
+                  <div className="border-t border-neutral-100 pt-5 space-y-3">
+                    <div className="flex justify-between text-xs text-neutral-500">
                       <span>Items Subtotal</span>
                       <span>{formatPrice(subtotal)}</span>
                     </div>
-                    <div className="flex justify-between text-xs text-gray-500">
+                    <div className="flex justify-between text-xs text-neutral-500">
                       <span>Delivery Fee</span>
                       <span>{formatPrice(shippingCost)}</span>
                     </div>
-                    <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
-                      <span className="font-bold text-sm text-gray-900">Total Amount</span>
-                      <span className="text-xl font-extrabold text-violet-700">
+                    <div className="border-t border-neutral-100 pt-4 flex justify-between items-center">
+                      <span className="font-bold text-sm text-navy">Total Amount</span>
+                      <span className="text-xl font-extrabold text-orange">
                         {formatPrice(grandTotal)}
                       </span>
                     </div>

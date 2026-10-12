@@ -39,7 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <Toaster
         position="top-right"
         toastOptions={{
-          className: 'text-sm font-semibold rounded-2xl bg-white border border-gray-100 shadow-xl shadow-gray-200/50',
+          className: 'text-sm font-semibold rounded-2xl bg-white border border-neutral-100 shadow-xl shadow-neutral-300/50',
           duration: 3000,
         }}
       />

@@ -59,10 +59,10 @@ function LoginContent() {
   return (
     <div className="bg-white flex justify-center px-4 py-[60px] font-poppins">
       <div className="max-w-[440px] w-full">
-        <div className="bg-white rounded-[20px] shadow-[0px_10px_40px_rgba(0,0,0,0.05)] p-8 border border-gray-50">
+        <div className="bg-white rounded-[20px] shadow-[0px_10px_40px_rgba(0,0,0,0.05)] p-8 border border-neutral-100">
           <div className="text-center mb-6">
             <h1 className="text-[28px] font-bold text-black mb-1">Welcome Back</h1>
-            <p className="text-[13px] text-[#666666]">Sign in to your Purixia BD account</p>
+            <p className="text-[13px] text-neutral-700">Sign in to your Purixia BD account</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -72,29 +72,29 @@ function LoginContent() {
                 type="email"
                 {...register('email')}
                 placeholder="Enter your email"
-                className="w-full h-[44px] px-4 bg-white border border-gray-100 rounded-[8px] text-[13px] focus:outline-none focus:border-[#F4B227] transition-colors"
+                className="w-full h-[44px] px-4 bg-white border border-neutral-100 rounded-[8px] text-[13px] focus:outline-none focus:border-orange transition-colors"
               />
-              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+              {errors.email && <p className="text-xs text-error">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
                 <label className="text-[13px] font-semibold text-black">Password</label>
-                <Link href="/forgot-password" className="text-[11px] text-[#666666] hover:text-[#F4B227]">Forgot Password?</Link>
+                <Link href="/forgot-password" className="text-[11px] text-neutral-700 hover:text-orange">Forgot Password?</Link>
               </div>
               <input
                 type="password"
                 {...register('password')}
                 placeholder="Enter your password"
-                className="w-full h-[44px] px-4 bg-white border border-gray-100 rounded-[8px] text-[13px] focus:outline-none focus:border-[#F4B227] transition-colors"
+                className="w-full h-[44px] px-4 bg-white border border-neutral-100 rounded-[8px] text-[13px] focus:outline-none focus:border-orange transition-colors"
               />
-              {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+              {errors.password && <p className="text-xs text-error">{errors.password.message}</p>}
             </div>
 
             <button
               type="submit"
               disabled={loginMutation.isPending}
-              className="w-full h-[48px] bg-[#F4B227] text-white font-bold text-[16px] rounded-[8px] hover:bg-[#D89500] transition-colors shadow-sm mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full h-[48px] bg-orange text-white font-bold text-[16px] rounded-[8px] hover:bg-orange-700 transition-colors shadow-sm mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loginMutation.isPending ? 'Signing in...' : (
                 <>
@@ -105,11 +105,11 @@ function LoginContent() {
             </button>
           </form>
 
-          <p className="text-center text-[13px] text-[#666666] mt-6">
+          <p className="text-center text-[13px] text-neutral-700 mt-6">
             Don&apos;t have an account?{' '}
             <Link
               href={redirectUrl ? `/register?redirect=${encodeURIComponent(redirectUrl)}` : '/register'}
-              className="font-bold text-[#F4B227] hover:underline"
+              className="font-bold text-orange hover:underline"
             >
               Sign up
             </Link>
@@ -125,7 +125,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-[#F4B227] border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

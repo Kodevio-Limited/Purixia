@@ -37,10 +37,10 @@ export function BannerSlider() {
 
   if (total === 0) {
     return (
-      <div className="w-full h-[220px] md:h-[400px] rounded-3xl bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center">
+      <div className="w-full h-[220px] md:h-[400px] rounded-3xl bg-grad-orange-black flex items-center justify-center">
         <div className="text-center text-white">
-          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2">Purixia</h2>
-          <p className="text-violet-200 text-sm md:text-base">Best gadgets in Bangladesh</p>
+          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 font-raleway">Purixia</h2>
+          <p className="text-orange-100 text-sm md:text-base">Best gadgets in Bangladesh</p>
         </div>
       </div>
     );

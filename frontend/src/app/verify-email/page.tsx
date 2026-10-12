@@ -45,20 +45,20 @@ function VerifyEmailContent() {
   return (
     <div className="bg-white flex justify-center px-4 py-[60px] font-poppins">
       <div className="max-w-[440px] w-full">
-        <div className="bg-white rounded-[20px] shadow-[0px_10px_40px_rgba(0,0,0,0.05)] p-8 border border-gray-50 text-center">
+        <div className="bg-white rounded-[20px] shadow-[0px_10px_40px_rgba(0,0,0,0.05)] p-8 border border-neutral-100 text-center">
           <h1 className="text-[28px] font-bold text-black mb-2">Email Confirmation</h1>
           {state.status === 'verifying' && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <div className="w-10 h-10 border-4 border-[#F4B227] border-t-transparent rounded-full animate-spin" />
-              <p className="text-[13px] text-[#666666]">Confirming your address…</p>
+              <div className="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin" />
+              <p className="text-[13px] text-neutral-700">Confirming your address…</p>
             </div>
           )}
           {state.status === 'done' && (
             <>
-              <p className="text-[13px] text-[#333333] mb-4">{state.message}</p>
+              <p className="text-[13px] text-navy mb-4">{state.message}</p>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center w-full h-[48px] bg-[#F4B227] text-white font-bold text-[16px] rounded-[8px] hover:bg-[#D89500] transition-colors"
+                className="inline-flex items-center justify-center w-full h-[48px] bg-orange text-white font-bold text-[16px] rounded-[8px] hover:bg-orange-700 transition-colors"
               >
                 Continue Shopping
               </Link>
@@ -66,10 +66,10 @@ function VerifyEmailContent() {
           )}
           {state.status === 'error' && (
             <>
-              <p className="text-[13px] text-red-500 mb-4">{state.message}</p>
-              <p className="text-[13px] text-[#666666]">
+              <p className="text-[13px] text-error mb-4">{state.message}</p>
+              <p className="text-[13px] text-neutral-700">
                 Links work once and expire after 24 hours — request a new signup link or{' '}
-                <Link href="/login" className="font-bold text-[#F4B227] hover:underline">
+                <Link href="/login" className="font-bold text-orange hover:underline">
                   sign in
                 </Link>{' '}
                 (shopping works without confirming).
@@ -87,7 +87,7 @@ export default function VerifyEmailPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-[#F4B227] border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

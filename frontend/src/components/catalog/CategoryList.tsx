@@ -29,8 +29,8 @@ export function CategoryList({ categories, isLoading, activeSlug, onSelect }: Ca
         className={cn(
           'px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap shrink-0',
           activeSlug === null
-            ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            ? 'bg-orange text-white shadow-md shadow-orange-100'
+            : 'bg-surface text-neutral-700 hover:bg-neutral-300'
         )}
       >
         All
@@ -42,8 +42,8 @@ export function CategoryList({ categories, isLoading, activeSlug, onSelect }: Ca
           className={cn(
             'px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap shrink-0',
             activeSlug === cat.slug
-              ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-orange text-white shadow-md shadow-orange-100'
+              : 'bg-surface text-neutral-700 hover:bg-neutral-300'
           )}
         >
           {cat.name}

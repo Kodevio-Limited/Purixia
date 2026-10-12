@@ -22,14 +22,14 @@ export interface ButtonProps
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, fullWidth, icon, children, disabled, ...props }, ref) => {
     
-    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none';
+    const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none';
     
     const variants = {
-      primary: 'bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-200 focus:ring-violet-500 border border-transparent',
-      secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-800 focus:ring-gray-300 border border-transparent',
-      outline: 'bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-200',
-      ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-100 border border-transparent',
-      danger: 'bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-200 focus:ring-red-500 border border-transparent',
+      primary: 'bg-orange hover:bg-orange-700 active:bg-orange-700 text-white shadow-md shadow-orange-100 focus-visible:ring-orange border border-transparent',
+      secondary: 'bg-navy hover:bg-navy-700 active:bg-navy-700 text-white shadow-md shadow-navy-100 focus-visible:ring-navy border border-transparent',
+      outline: 'bg-transparent border border-orange text-orange hover:bg-orange hover:text-white focus-visible:ring-orange',
+      ghost: 'bg-transparent text-navy hover:bg-surface focus-visible:ring-neutral-300 border border-transparent',
+      danger: 'bg-error hover:opacity-90 active:opacity-90 text-white shadow-md shadow-error-100 focus-visible:ring-error border border-transparent',
     };
 
     const sizes = {

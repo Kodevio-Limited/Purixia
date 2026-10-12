@@ -10,13 +10,13 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 export function Badge({ className, status = 'pending', size = 'sm', children, ...props }: BadgeProps) {
   
   const statusColors = {
-    pending: 'bg-amber-50 text-amber-700 border-amber-200/60',
-    confirmed: 'bg-blue-50 text-blue-700 border-blue-200/60',
-    shipped: 'bg-purple-50 text-purple-700 border-purple-200/60',
-    delivered: 'bg-green-50 text-green-700 border-green-200/60',
-    cancelled: 'bg-red-50 text-red-700 border-red-200/60',
-    in_stock: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
-    out_of_stock: 'bg-rose-50 text-rose-700 border-rose-200/60',
+    pending: 'bg-orange-100 text-orange-700 border-orange-300',
+    confirmed: 'bg-navy-100 text-navy-700 border-navy-300',
+    shipped: 'bg-navy text-white border-navy',
+    delivered: 'bg-success-50 text-success border-success-100',
+    cancelled: 'bg-error-50 text-error border-error-100',
+    in_stock: 'bg-success-50 text-success border-success-100',
+    out_of_stock: 'bg-error-50 text-error border-error-100',
   };
 
   const sizes = {
@@ -28,7 +28,7 @@ export function Badge({ className, status = 'pending', size = 'sm', children, ..
     <span
       className={cn(
         'inline-flex items-center justify-center font-medium select-none',
-        statusColors[status] || 'bg-gray-100 text-gray-800 border-gray-200',
+        statusColors[status] || 'bg-surface text-navy border-neutral-300',
         sizes[size],
         className
       )}

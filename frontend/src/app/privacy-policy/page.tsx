@@ -88,25 +88,25 @@ export default function PrivacyPolicyPage() {
       {/* Page Header */}
       <div className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] pt-[40px] pb-[20px]">
         <div className="max-w-[1440px] mx-auto">
-          <nav className="flex items-center gap-1 text-[11px] text-[#666666] mb-4 uppercase tracking-wider">
-            <Link href="/" className="hover:text-[#F4B227] transition-colors">Home</Link>
+          <nav className="flex items-center gap-1 text-[11px] text-neutral-700 mb-4 uppercase tracking-wider">
+            <Link href="/" className="hover:text-orange transition-colors">Home</Link>
             <ChevronRight className="w-3 h-3" />
             <span className="text-black font-bold">Privacy Policy</span>
           </nav>
 
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-[10px] bg-[#F4B227]/10 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-[#F4B227]" />
+            <div className="w-10 h-10 rounded-[10px] bg-orange/10 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-orange" />
             </div>
             <h1 className="text-[28px] md:text-[32px] font-bold text-black tracking-tight uppercase">
               Privacy Policy
             </h1>
           </div>
-          <p className="text-[13px] text-[#666666] max-w-2xl leading-relaxed">
+          <p className="text-[13px] text-neutral-700 max-w-2xl leading-relaxed">
             At Purixia BD, your privacy matters. This policy explains what information we
             collect, how we use it, and the choices you have. Built on integrity, driven by trust.
           </p>
-          <p className="text-[11px] text-[#666666] mt-2">
+          <p className="text-[11px] text-neutral-700 mt-2">
             Last updated: September 16, 2026
           </p>
         </div>
@@ -117,14 +117,14 @@ export default function PrivacyPolicyPage() {
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-10">
           {/* Table of Contents */}
           <aside className="hidden lg:block">
-            <div className="sticky top-[100px] border border-gray-100 rounded-[20px] p-5 bg-[#FFFBEB]/40">
+            <div className="sticky top-[100px] border border-neutral-100 rounded-[20px] p-5 bg-surface/40">
               <h2 className="text-[12px] font-bold text-black uppercase tracking-wider mb-3">Contents</h2>
               <ul className="space-y-2.5">
                 {sections.map((section) => (
                   <li key={section.title}>
                     <a
                       href={`#${section.title.split('.')[0].toLowerCase().replace(/\s+/g, '-')}`}
-                      className="text-[12px] text-[#666666] hover:text-[#F4B227] transition-colors leading-snug block"
+                      className="text-[12px] text-neutral-700 hover:text-orange transition-colors leading-snug block"
                     >
                       {section.title}
                     </a>
@@ -148,8 +148,8 @@ export default function PrivacyPolicyPage() {
                 <ul className="space-y-2.5">
                   {section.content.map((paragraph, i) => (
                     <li key={i} className="flex gap-3">
-                      <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-[#F4B227] shrink-0" />
-                      <p className="text-[13px] text-[#666666] leading-relaxed">{paragraph}</p>
+                      <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-orange shrink-0" />
+                      <p className="text-[13px] text-neutral-700 leading-relaxed">{paragraph}</p>
                     </li>
                   ))}
                 </ul>
@@ -157,14 +157,14 @@ export default function PrivacyPolicyPage() {
             ))}
 
             {/* Contact notice */}
-            <div className="bg-[#FFFBEB] border border-[#F4B227]/20 rounded-[20px] p-6">
+            <div className="bg-surface border border-orange/20 rounded-[20px] p-6">
               <h3 className="text-[14px] font-bold text-black mb-1">Questions about your privacy?</h3>
-              <p className="text-[13px] text-[#666666] mb-3 leading-relaxed">
+              <p className="text-[13px] text-neutral-700 mb-3 leading-relaxed">
                 Reach out to us any time — we&apos;re happy to help.
               </p>
               <Link
                 href="/contact-us"
-                className="inline-flex items-center gap-2 h-[40px] px-5 bg-[#F4B227] text-white font-bold text-[13px] rounded-[8px] hover:bg-[#D89500] transition-colors"
+                className="inline-flex items-center gap-2 h-[40px] px-5 bg-orange text-white font-bold text-[13px] rounded-[8px] hover:bg-orange-700 transition-colors"
               >
                 Contact Us <ChevronRight className="w-4 h-4" />
               </Link>

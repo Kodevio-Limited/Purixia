@@ -116,8 +116,8 @@ export default function ContactUsPage() {
     };
 
   const inputClass = (hasError?: string) =>
-    `w-full h-[44px] px-4 bg-white border rounded-[8px] text-[13px] focus:outline-none focus:border-[#F4B227] transition-colors ${
-      hasError ? 'border-red-400' : 'border-gray-100'
+    `w-full h-[44px] px-4 bg-white border rounded-[8px] text-[13px] focus:outline-none focus:border-orange transition-colors ${
+      hasError ? 'border-error' : 'border-neutral-100'
     }`;
 
   return (
@@ -130,8 +130,8 @@ export default function ContactUsPage() {
       {/* Page Header */}
       <div className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] pt-[40px] pb-[20px]">
         <div className="max-w-[1440px] mx-auto">
-          <nav className="flex items-center gap-1 text-[11px] text-[#666666] mb-4 uppercase tracking-wider">
-            <Link href="/" className="hover:text-[#F4B227] transition-colors">Home</Link>
+          <nav className="flex items-center gap-1 text-[11px] text-neutral-700 mb-4 uppercase tracking-wider">
+            <Link href="/" className="hover:text-orange transition-colors">Home</Link>
             <ChevronRight className="w-3 h-3" />
             <span className="text-black font-bold">Contact Us</span>
           </nav>
@@ -139,7 +139,7 @@ export default function ContactUsPage() {
           <h1 className="text-[28px] md:text-[32px] font-bold text-black tracking-tight uppercase">
             Contact Us
           </h1>
-          <p className="text-[13px] text-[#666666] max-w-2xl leading-relaxed mt-2">
+          <p className="text-[13px] text-neutral-700 max-w-2xl leading-relaxed mt-2">
             We&apos;re here to help with orders, delivery, returns, or anything else.
             Reach out through any channel below — we usually reply within a few hours.
           </p>
@@ -153,13 +153,13 @@ export default function ContactUsPage() {
             const Icon = item.icon;
             const inner = (
               <>
-                <div className="w-11 h-11 rounded-[10px] bg-[#F4B227]/10 flex items-center justify-center mb-4 group-hover:bg-[#F4B227] transition-colors">
-                  <Icon className="w-5 h-5 text-[#F4B227] group-hover:text-white transition-colors" />
+                <div className="w-11 h-11 rounded-[10px] bg-orange/10 flex items-center justify-center mb-4 group-hover:bg-orange transition-colors">
+                  <Icon className="w-5 h-5 text-orange group-hover:text-white transition-colors" />
                 </div>
                 <h3 className="text-[13px] font-bold text-black uppercase tracking-wide mb-1">
                   {item.label}
                 </h3>
-                <p className="text-[13px] text-[#666666] leading-relaxed">{item.value}</p>
+                <p className="text-[13px] text-neutral-700 leading-relaxed">{item.value}</p>
               </>
             );
 
@@ -169,14 +169,14 @@ export default function ContactUsPage() {
                 href={item.href}
                 target={item.href.startsWith('http') ? '_blank' : undefined}
                 rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                className="group bg-white rounded-[20px] border border-gray-100 p-6 shadow-[0px_4px_15px_rgba(0,0,0,0.03)] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all"
+                className="group bg-white rounded-[20px] border border-neutral-100 p-6 shadow-[0px_4px_15px_rgba(0,0,0,0.03)] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all"
               >
                 {inner}
               </a>
             ) : (
               <div
                 key={item.label}
-                className="group bg-white rounded-[20px] border border-gray-100 p-6 shadow-[0px_4px_15px_rgba(0,0,0,0.03)]"
+                className="group bg-white rounded-[20px] border border-neutral-100 p-6 shadow-[0px_4px_15px_rgba(0,0,0,0.03)]"
               >
                 {inner}
               </div>
@@ -189,11 +189,11 @@ export default function ContactUsPage() {
       <div className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] pb-[60px]">
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-[40px]">
           {/* Contact Form */}
-          <div className="bg-white rounded-[20px] border border-gray-100 shadow-[0px_4px_20px_rgba(0,0,0,0.03)] p-6 md:p-8">
+          <div className="bg-white rounded-[20px] border border-neutral-100 shadow-[0px_4px_20px_rgba(0,0,0,0.03)] p-6 md:p-8">
             <h2 className="text-[18px] font-bold text-black uppercase tracking-wide mb-1">
               Send us a message
             </h2>
-            <p className="text-[12px] text-[#666666] mb-6">
+            <p className="text-[12px] text-neutral-700 mb-6">
               Fill out the form and your email app will open with the message ready to send.
             </p>
 
@@ -208,7 +208,7 @@ export default function ContactUsPage() {
                     placeholder="Enter your name"
                     className={inputClass(errors.name)}
                   />
-                  {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+                  {errors.name && <p className="text-xs text-error">{errors.name}</p>}
                 </div>
 
                 <div className="space-y-1.5">
@@ -220,7 +220,7 @@ export default function ContactUsPage() {
                     placeholder="Enter your email"
                     className={inputClass(errors.email)}
                   />
-                  {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+                  {errors.email && <p className="text-xs text-error">{errors.email}</p>}
                 </div>
               </div>
 
@@ -233,7 +233,7 @@ export default function ContactUsPage() {
                   placeholder="What is this about? (e.g. Order #12 delivery)"
                   className={inputClass(errors.subject)}
                 />
-                {errors.subject && <p className="text-xs text-red-500">{errors.subject}</p>}
+                {errors.subject && <p className="text-xs text-error">{errors.subject}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -243,16 +243,16 @@ export default function ContactUsPage() {
                   onChange={handleChange('message')}
                   placeholder="Write your message here..."
                   rows={6}
-                  className={`w-full px-4 py-3 bg-white border rounded-[8px] text-[13px] focus:outline-none focus:border-[#F4B227] transition-colors resize-none ${
-                    errors.message ? 'border-red-400' : 'border-gray-100'
+                  className={`w-full px-4 py-3 bg-white border rounded-[8px] text-[13px] focus:outline-none focus:border-orange transition-colors resize-none ${
+                    errors.message ? 'border-error' : 'border-neutral-100'
                   }`}
                 />
-                {errors.message && <p className="text-xs text-red-500">{errors.message}</p>}
+                {errors.message && <p className="text-xs text-error">{errors.message}</p>}
               </div>
 
               <button
                 type="submit"
-                className="inline-flex items-center justify-center gap-2 h-[48px] px-8 bg-[#F4B227] text-white font-bold text-[14px] rounded-[8px] hover:bg-[#D89500] transition-colors shadow-sm"
+                className="inline-flex items-center justify-center gap-2 h-[48px] px-8 bg-orange text-white font-bold text-[14px] rounded-[8px] hover:bg-orange-700 transition-colors shadow-sm"
               >
                 <Send className="w-4 h-4" />
                 Send Message
@@ -270,22 +270,22 @@ export default function ContactUsPage() {
               return (
                 <div
                   key={card.title}
-                  className="bg-white rounded-[20px] border border-gray-100 p-5 shadow-[0px_4px_15px_rgba(0,0,0,0.03)] flex gap-4"
+                  className="bg-white rounded-[20px] border border-neutral-100 p-5 shadow-[0px_4px_15px_rgba(0,0,0,0.03)] flex gap-4"
                 >
-                  <div className="w-10 h-10 rounded-[10px] bg-[#F4B227]/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-[#F4B227]" />
+                  <div className="w-10 h-10 rounded-[10px] bg-orange/10 flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 text-orange" />
                   </div>
                   <div>
                     <h3 className="text-[13px] font-bold text-black mb-1">{card.title}</h3>
-                    <p className="text-[12px] text-[#666666] leading-relaxed">{card.text}</p>
+                    <p className="text-[12px] text-neutral-700 leading-relaxed">{card.text}</p>
                   </div>
                 </div>
               );
             })}
 
-            <div className="bg-[#FFFBEB] border border-[#F4B227]/20 rounded-[20px] p-5">
+            <div className="bg-surface border border-orange/20 rounded-[20px] p-5">
               <h3 className="text-[13px] font-bold text-black mb-1">Prefer social?</h3>
-              <p className="text-[12px] text-[#666666] leading-relaxed">
+              <p className="text-[12px] text-neutral-700 leading-relaxed">
                 Message us on WhatsApp or reach us through our Facebook page — links are in the
                 footer below.
               </p>

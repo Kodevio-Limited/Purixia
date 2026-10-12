@@ -40,15 +40,15 @@ function ProductsContent() {
     <PageWrapper className="space-y-8">
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Our Catalog</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-3xl font-extrabold text-navy tracking-tight">Our Catalog</h1>
+        <p className="text-sm text-neutral-500 mt-1">
           Explore all original premium gadgets with official warranty
         </p>
       </div>
 
       {/* Category filters */}
       <section className="space-y-3">
-        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+        <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-widest">
           Filter by Category
         </h2>
         <CategoryList
@@ -77,7 +77,7 @@ export default function ProductsPage() {
     <Suspense
       fallback={
         <PageWrapper className="space-y-8">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600 mx-auto mt-20" />
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange mx-auto mt-20" />
         </PageWrapper>
       }
     >

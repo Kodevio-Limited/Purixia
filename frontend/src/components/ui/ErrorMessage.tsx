@@ -10,13 +10,13 @@ export function ErrorMessage({ message, className, ...props }: ErrorMessageProps
   return (
     <div
       className={cn(
-        'flex items-center gap-3 p-4 bg-red-50 border border-red-200/60 rounded-xl text-sm text-red-700',
+        'flex items-center gap-3 p-4 bg-error-50 border border-error-100/60 rounded-xl text-sm text-error',
         className
       )}
       role="alert"
       {...props}
     >
-      <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
+      <AlertCircle className="w-5 h-5 shrink-0 text-error" />
       <span className="font-medium">{message}</span>
     </div>
   );

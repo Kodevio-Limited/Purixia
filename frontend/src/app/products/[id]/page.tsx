@@ -19,7 +19,7 @@ export default function ProductDetailPage() {
   if (isNaN(id)) {
     return (
       <PageWrapper className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <h2 className="text-xl font-bold text-gray-900">Invalid Product ID</h2>
+        <h2 className="text-xl font-bold text-navy">Invalid Product ID</h2>
         <Button variant="primary" onClick={() => router.push('/products')} className="mt-4">
           Back to Products
         </Button>
@@ -30,8 +30,8 @@ export default function ProductDetailPage() {
   if (isError) {
     return (
       <PageWrapper className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <h2 className="text-xl font-bold text-red-600">Product not found</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-error">Product not found</h2>
+        <p className="text-sm text-neutral-500 mt-1">
           The product might have been removed or is temporarily unavailable.
         </p>
         <Button variant="primary" onClick={() => router.push('/products')} className="mt-4">
@@ -46,7 +46,7 @@ export default function ProductDetailPage() {
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-950 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-500 hover:text-navy transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back

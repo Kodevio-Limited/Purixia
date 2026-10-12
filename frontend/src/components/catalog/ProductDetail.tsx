@@ -25,7 +25,7 @@ function Stars({ value, className }: { value: number; className?: string }) {
           key={s}
           className={cn(
             'w-3.5 h-3.5',
-            s <= Math.round(value) ? 'fill-[#F4B227] text-[#F4B227]' : 'fill-gray-200 text-gray-200'
+            s <= Math.round(value) ? 'fill-orange text-orange' : 'fill-neutral-300 text-neutral-300'
           )}
         />
       ))}
@@ -111,20 +111,20 @@ export function ProductDetail({ product }: ProductDetailProps) {
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[20px] font-poppins">
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-gray-500 mb-4">
-        <Link href="/" className="hover:text-[#F4B227] transition-colors">Home</Link>
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-neutral-500 mb-4">
+        <Link href="/" className="hover:text-orange transition-colors">Home</Link>
         <span aria-hidden="true">/</span>
-        <Link href="/products" className="hover:text-[#F4B227] transition-colors">Products</Link>
+        <Link href="/products" className="hover:text-orange transition-colors">Products</Link>
         <span aria-hidden="true">/</span>
         <span className="text-black font-semibold line-clamp-1">{product.name}</span>
       </nav>
 
       {/* Product Card */}
-      <div className="bg-white rounded-[20px] shadow-[0px_4px_30px_rgba(0,0,0,0.03)] p-[24px] mb-[24px] border border-gray-50">
+      <div className="bg-white rounded-[20px] shadow-[0px_4px_30px_rgba(0,0,0,0.03)] p-[24px] mb-[24px] border border-neutral-100">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-[30px]">
           {/* Left: Images (5 columns) */}
           <div className="lg:col-span-5 flex flex-col gap-3">
-            <div className="relative aspect-square w-full bg-[#F5F5F5] rounded-[15px] overflow-hidden border border-gray-50">
+            <div className="relative aspect-square w-full bg-surface rounded-[15px] overflow-hidden border border-neutral-100">
               <Image
                 src={getImageUrl(selectedImage)}
                 alt={product.name}
@@ -141,8 +141,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   onClick={() => setSelectedImage(img)}
                   aria-label={`View product image ${i + 1}`}
                   className={cn(
-                    "relative w-[60px] h-[60px] bg-[#F5F5F5] rounded-[8px] overflow-hidden border transition-all cursor-pointer shrink-0",
-                    selectedImage === img ? "border-[#F4B227]" : "border-gray-100 opacity-60 hover:opacity-100"
+                    "relative w-[60px] h-[60px] bg-surface rounded-[8px] overflow-hidden border transition-all cursor-pointer shrink-0",
+                    selectedImage === img ? "border-orange" : "border-neutral-100 opacity-60 hover:opacity-100"
                   )}
                 >
                   <Image
@@ -166,8 +166,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 className={cn(
                   'text-[9px] font-bold px-2 py-0.5 rounded-[4px] border uppercase tracking-wider',
                   inStock
-                    ? 'bg-[#ECFDF5] text-[#10B981] border-[#D1FAE5]'
-                    : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
+                    ? 'bg-success-50 text-success border-success-100'
+                    : 'bg-error-50 text-error border-error-100'
                 )}
               >
                 {inStock ? 'In Stock' : 'Out of Stock'}
@@ -189,7 +189,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
             {/* Rating summary */}
             <div className="flex items-center gap-2 mb-3">
               <Stars value={avgRating} />
-              <span className="text-[12px] text-[#666666]">
+              <span className="text-[12px] text-neutral-700">
                 {reviewCount > 0 ? `${reviewCount} rating${reviewCount > 1 ? 's' : ''}` : '0 ratings'}
               </span>
             </div>
@@ -199,8 +199,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <span className="text-[24px] font-bold text-black">{formatPrice(salePrice)}</span>
               {hasOffer && (
                 <>
-                  <span className="text-[14px] text-gray-400 line-through">{formatPrice(product.price)}</span>
-                  <span className="text-[12px] text-red-500 font-bold">{discount}% OFF</span>
+                  <span className="text-[14px] text-neutral-500 line-through">{formatPrice(product.price)}</span>
+                  <span className="text-[12px] text-error font-bold">{discount}% OFF</span>
                 </>
               )}
             </div>
@@ -209,28 +209,28 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <div className="mb-6">
               <div className="space-y-1.5">
                 <span className="text-[11px] font-bold text-black uppercase tracking-wider">SKU</span>
-                <p className="text-[12px] text-[#666666]">#PRX-{String(product.id).padStart(6, '0')}</p>
+                <p className="text-[12px] text-neutral-700">#PRX-{String(product.id).padStart(6, '0')}</p>
               </div>
             </div>
 
             {/* Quantity & Actions */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-8">
-              <div className="flex items-center border border-gray-200 rounded-[8px] h-[44px] bg-gray-50 w-fit">
+              <div className="flex items-center border border-neutral-300 rounded-[8px] h-[44px] bg-surface w-fit">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   aria-label="Decrease quantity"
-                  className="w-10 h-full flex items-center justify-center text-gray-400 hover:text-black transition-colors"
+                  className="w-10 h-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="w-10 h-full flex items-center justify-center text-[14px] font-bold border-x border-gray-200">
+                <span className="w-10 h-full flex items-center justify-center text-[14px] font-bold border-x border-neutral-300">
                   {quantity}
                 </span>
                 <button
                   onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
                   disabled={quantity >= maxQuantity}
                   aria-label="Increase quantity"
-                  className="w-10 h-full flex items-center justify-center text-gray-400 hover:text-black transition-colors disabled:opacity-40 disabled:hover:text-gray-400"
+                  className="w-10 h-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors disabled:opacity-40 disabled:hover:text-neutral-500"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -240,7 +240,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <button
                   onClick={handleAddToCart}
                   disabled={adding || !inStock}
-                  className="flex-1 h-[44px] bg-black text-white text-[13px] font-bold rounded-[8px] hover:bg-gray-800 transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 h-[44px] bg-black text-white text-[13px] font-bold rounded-[8px] hover:bg-navy transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   Add to Cart
@@ -248,7 +248,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <button
                   onClick={handleBuyNow}
                   disabled={adding || !inStock}
-                  className="flex-1 h-[44px] bg-[#F4B227] text-white text-[13px] font-bold rounded-[8px] hover:bg-[#D89500] transition-all shadow-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 h-[44px] bg-orange text-white text-[13px] font-bold rounded-[8px] hover:bg-orange-700 transition-all shadow-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Buy Now
                 </button>
@@ -259,8 +259,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
       </div>
 
       {/* Tabs: Specification / Description / Reviews */}
-      <div className="bg-white rounded-[20px] shadow-[0px_4px_30px_rgba(0,0,0,0.03)] border border-gray-50 overflow-hidden">
-        <div role="tablist" aria-label="Product information" className="flex border-b border-gray-100 overflow-x-auto">
+      <div className="bg-white rounded-[20px] shadow-[0px_4px_30px_rgba(0,0,0,0.03)] border border-neutral-100 overflow-hidden">
+        <div role="tablist" aria-label="Product information" className="flex border-b border-neutral-100 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -270,8 +270,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
               className={cn(
                 'flex-1 min-w-[120px] px-4 py-3 text-[13px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap',
                 activeTab === tab.id
-                  ? 'text-black border-b-2 border-[#F4B227]'
-                  : 'text-[#666666] hover:text-black'
+                  ? 'text-black border-b-2 border-orange'
+                  : 'text-neutral-700 hover:text-black'
               )}
             >
               {tab.label}
@@ -287,25 +287,25 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   <table className="w-full text-[13px]">
                     <tbody>
                       {product.specifications.map((spec, i) => (
-                        <tr key={spec.id} className={cn(i % 2 === 0 ? 'bg-gray-50' : 'bg-white')}>
+                        <tr key={spec.id} className={cn(i % 2 === 0 ? 'bg-surface' : 'bg-white')}>
                           <th className="text-left font-bold text-black px-4 py-2.5 w-[200px] sm:w-[280px] align-top">
                             {spec.name}
                           </th>
-                          <td className="text-[#333333] px-4 py-2.5">{spec.value}</td>
+                          <td className="text-navy px-4 py-2.5">{spec.value}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <p className="text-[13px] text-[#666666]">No specifications added for this product yet.</p>
+                <p className="text-[13px] text-neutral-700">No specifications added for this product yet.</p>
               )}
             </div>
           )}
 
           {activeTab === 'description' && (
             <div role="tabpanel">
-              <div className="text-[13px] text-[#666666] leading-relaxed whitespace-pre-line">
+              <div className="text-[13px] text-neutral-700 leading-relaxed whitespace-pre-line">
                 {product.description || 'No description available for this product.'}
               </div>
             </div>
@@ -316,38 +316,38 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <div className="flex items-center gap-3 mb-5">
                 <Stars value={avgRating} className="[&>svg]:w-4 [&>svg]:h-4" />
                 <span className="text-[13px] font-bold text-black">{avgRating.toFixed(1)}</span>
-                <span className="text-[12px] text-[#666666]">
+                <span className="text-[12px] text-neutral-700">
                   Based on {reviewCount} review{reviewCount === 1 ? '' : 's'}
                 </span>
               </div>
               {reviewCount > 0 ? (
                 <ul className="space-y-4">
                   {reviews.map((review) => (
-                    <li key={review.id} className="border border-gray-100 rounded-[12px] p-4">
+                    <li key={review.id} className="border border-neutral-100 rounded-[12px] p-4">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="inline-flex items-center gap-1.5 text-[13px] font-bold text-black">
                           {review.reviewer_name}
                           {review.is_verified_purchase && (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-success-50 text-success text-[10px] font-bold">
                               <BadgeCheck className="w-3 h-3" />
                               Verified Purchase
                             </span>
                           )}
                         </span>
-                        <span className="text-[11px] text-[#999999]">{formatDate(review.created_at)}</span>
+                        <span className="text-[11px] text-neutral-500">{formatDate(review.created_at)}</span>
                       </div>
                       <Stars value={Number(review.rating)} className="mb-1.5" />
                       {review.title && (
                         <p className="text-[13px] font-semibold text-black mb-1">{review.title}</p>
                       )}
                       {review.comment && (
-                        <p className="text-[13px] text-[#666666] leading-relaxed">{review.comment}</p>
+                        <p className="text-[13px] text-neutral-700 leading-relaxed">{review.comment}</p>
                       )}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-[13px] text-[#666666]">No reviews yet for this product.</p>
+                <p className="text-[13px] text-neutral-700">No reviews yet for this product.</p>
               )}
             </div>
           )}

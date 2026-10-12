@@ -46,10 +46,10 @@ export function ProductCard({ product }: ProductCardProps) {
       <motion.div
         whileHover={{ y: -4 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 transition-shadow overflow-hidden h-full flex flex-col"
+        className="group relative bg-white rounded-2xl border border-neutral-100 shadow-sm hover:shadow-xl hover:shadow-neutral-300/50 transition-shadow overflow-hidden h-full flex flex-col"
       >
         {/* Image */}
-        <div className="relative w-full aspect-square bg-gray-50 overflow-hidden">
+        <div className="relative w-full aspect-square bg-surface overflow-hidden">
           <Image
             src={getImageUrl(product.image)}
             alt={product.name}
@@ -67,8 +67,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Body */}
         <div className="flex flex-col flex-1 p-4">
-          <h3 className="text-sm font-bold text-gray-900 line-clamp-1 mb-0.5">{product.name}</h3>
-          <p className="text-xs text-gray-500 line-clamp-1 mb-2">{product.title}</p>
+          <h3 className="text-sm font-bold text-navy line-clamp-1 mb-0.5">{product.name}</h3>
+          <p className="text-xs text-neutral-500 line-clamp-1 mb-2">{product.title}</p>
 
           {/* Rating */}
           <div className="flex items-center gap-1 mb-3">
@@ -77,19 +77,19 @@ export function ProductCard({ product }: ProductCardProps) {
                 key={star}
                 className={cn(
                   'w-3.5 h-3.5',
-                  star <= Math.round(rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'
+                  star <= Math.round(rating) ? 'fill-orange text-orange' : 'text-neutral-300'
                 )}
               />
             ))}
-            <span className="text-[10px] text-gray-400 ml-0.5">({rating})</span>
+            <span className="text-[10px] text-neutral-500 ml-0.5">({rating})</span>
           </div>
 
           {/* Price + Cart button */}
           <div className="flex items-center justify-between mt-auto">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-extrabold text-violet-700">{formatPrice(salePrice)}</span>
+              <span className="text-base font-extrabold text-orange">{formatPrice(salePrice)}</span>
               {hasOffer && (
-                <span className="text-xs text-gray-400 line-through">{formatPrice(product.price)}</span>
+                <span className="text-xs text-neutral-500 line-through">{formatPrice(product.price)}</span>
               )}
             </div>
             <motion.button
@@ -99,8 +99,8 @@ export function ProductCard({ product }: ProductCardProps) {
               className={cn(
                 'p-2 rounded-xl transition-colors',
                 product.in_stock
-                  ? 'bg-violet-50 text-violet-600 hover:bg-violet-100'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  ? 'bg-orange-100 text-orange hover:bg-orange-100'
+                  : 'bg-surface text-neutral-500 cursor-not-allowed'
               )}
             >
               <ShoppingCart className="w-4 h-4" />
