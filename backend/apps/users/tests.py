@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.test import override_settings
@@ -308,3 +309,35 @@ class EmailVerificationTests(APITestCase):
             'items': [{'product_id': product.id, 'quantity': 1}],
         }, format='json')
         self.assertEqual(res.status_code, 201, res.data)
+
+
+class EmailOrUsernameAuthTests(APITestCase):
+    """The admin accepts a username OR an email (apps/users/backends.py)."""
+
+    def test_authenticate_by_username(self):
+        User.objects.create_user(username='byuser', email='byuser@example.com', password=PASSWORD)
+        self.assertIsNotNone(authenticate(username='byuser', password=PASSWORD))
+
+    def test_authenticate_by_email(self):
+        User.objects.create_user(username='byemail', email='byemail@example.com', password=PASSWORD)
+        self.assertIsNotNone(authenticate(username='byemail@example.com', password=PASSWORD))
+        # mixed case email works too (storefront lowercases; be forgiving)
+        self.assertIsNotNone(authenticate(username='ByEmail@Example.com', password=PASSWORD))
+
+    def test_wrong_password_is_rejected(self):
+        User.objects.create_user(username='nope', email='nope@example.com', password=PASSWORD)
+        self.assertIsNone(authenticate(username='nope@example.com', password='wrong-pass'))
+        self.assertIsNone(authenticate(username='nope', password='wrong-pass'))
+
+    def test_unknown_identifier_is_rejected(self):
+        self.assertIsNone(authenticate(username='ghost@example.com', password=PASSWORD))
+
+    def test_inactive_user_is_rejected(self):
+        u = User.objects.create_user(username='offemail', email='off@example.com', password=PASSWORD)
+        u.is_active = False
+        u.save(update_fields=['is_active'])
+        self.assertIsNone(authenticate(username='off@example.com', password=PASSWORD))
+
+    def test_admin_login_with_email(self):
+        User.objects.create_superuser(username='boss', email='boss@example.com', password=PASSWORD)
+        self.assertTrue(self.client.login(username='boss@example.com', password=PASSWORD))

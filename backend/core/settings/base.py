@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -7,6 +8,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # ── Security ──────────────────────────────────────────────────────────────────
 SECRET_KEY = config('SECRET_KEY')
 AUTH_USER_MODEL = 'users.User'
+
+# The admin login field is labelled "Username" but the storefront uses email, so
+# accept either (see apps/users/backends.py). Subclasses ModelBackend, so
+# password checks, permissions and is_active/staff gates are unchanged.
+AUTHENTICATION_BACKENDS = [
+    'apps.users.backends.EmailOrUsernameBackend',
+]
 
 # ── Apps ──────────────────────────────────────────────────────────────────────
 DJANGO_APPS = [
@@ -212,6 +220,14 @@ DELIVERY_CHARGE_OUTSIDE = config('DELIVERY_CHARGE_OUTSIDE', default=120, cast=in
 # account may hold at once. Cash on delivery means an unpaid order is a real
 # commitment, so the cap keeps one account from stockpiling them.
 MAX_OPEN_ORDERS = config('MAX_OPEN_ORDERS', default=1, cast=int)
+
+# ── CORS request headers ──────────────────────────────────────────────────────
+# django-cors-headers' default allow-list does NOT include custom headers. The
+# storefront sends `Idempotency-Key` on POST /api/orders/place/, and a browser
+# preflight that does not see it echoed in Access-Control-Allow-Headers blocks
+# the request entirely (order placement silently fails client-side). Extend the
+# defaults rather than replacing them so the standard headers stay allowed.
+CORS_ALLOW_HEADERS = (*default_headers, 'idempotency-key')
 
 # ── DRF ───────────────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {

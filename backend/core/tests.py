@@ -281,3 +281,29 @@ class SentryInitTests(SimpleTestCase):
             with self.assertLogs('core.sentry', level='WARNING') as logs:
                 self.assertFalse(init_sentry())
         self.assertTrue(any('not installed' in line for line in logs.output))
+
+
+class CorsPreflightTests(TestCase):
+    """The storefront sends Idempotency-Key on order placement; the browser
+    preflight must echo it in Access-Control-Allow-Headers or the POST is
+    blocked client-side."""
+
+    @override_settings(CORS_ALLOW_ALL_ORIGINS=False, CORS_ALLOWED_ORIGINS=['https://purixiabd.com'])
+    def test_order_preflight_allows_idempotency_key(self):
+        res = self.client.options(
+            '/api/orders/place/',
+            HTTP_ORIGIN='https://purixiabd.com',
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD='POST',
+            HTTP_ACCESS_CONTROL_REQUEST_HEADERS='authorization,content-type,idempotency-key',
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('idempotency-key', res['access-control-allow-headers'].lower())
+
+    @override_settings(CORS_ALLOW_ALL_ORIGINS=False, CORS_ALLOWED_ORIGINS=['https://purixiabd.com'])
+    def test_preflight_disallowed_origin_gets_no_cors_headers(self):
+        res = self.client.options(
+            '/api/orders/place/',
+            HTTP_ORIGIN='https://evil.example',
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD='POST',
+        )
+        self.assertNotIn('access-control-allow-origin', res)
