@@ -36,14 +36,9 @@ else
   python manage.py migrate --noinput --settings=core.settings.prod
 fi
 
-# Admin bootstrap also mutates shared state (it creates/updates a user row), so
-# it is gated the same way: exactly one process should do it, not every replica.
-if [ "${BOOTSTRAP_ON_BOOT:-1}" = "0" ]; then
-  echo ">> BOOTSTRAP_ON_BOOT=0 — skipping ensure_admin (owned by the migrate service)"
-else
-  echo ">> Ensuring admin superuser exists"
-  python manage.py ensure_admin --settings=core.settings.prod 2>/dev/null || true
-fi
+# The Django admin is NOT bootstrapped from the environment (no ADMIN_* vars).
+# Create it once and manage its password in the admin / changepassword:
+#   python manage.py createsuperuser --settings=core.settings.prod
 
 echo ">> Collecting static files"
 python manage.py collectstatic --noinput --settings=core.settings.prod 2>/dev/null || true

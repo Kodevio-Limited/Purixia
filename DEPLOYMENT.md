@@ -46,21 +46,25 @@ Dokploy, never from a file).
 | `CORS_ALLOWED_ORIGINS` | backend, migrate | Must contain the storefront origins. Default: `https://purixiabd.com,https://www.purixiabd.com` |
 | `REDIS_URL` | backend, migrate | Required so throttles/caches are shared across replicas. Default: `redis://redis:6379/0` |
 
-### Admin bootstrap (runs on every deploy)
+### Admin account (manual — not managed from the environment)
 
-The `migrate` service runs `ensure_admin` on every deploy. It **creates** the
-account if it is missing and otherwise leaves it alone — the account lives in
-Postgres, so it (and its password) persists across redeploys. You never need to
-re-run anything after a deploy.
+The Django admin is **not** created or reset by env vars. There are no
+`ADMIN_*` variables and nothing runs automatically on deploy, so the account and
+its password are managed only inside Django and persist in Postgres.
 
-| Variable | Notes |
-|---|---|
-| `ADMIN_USERNAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Seed for the superuser account |
-| `ADMIN_RESET_PASSWORD` | **Leave `0`.** Set to `1` for exactly one deploy to force-reset the existing admin's password; the command logs a warning when it does. Leaving it at `1` resets the password on **every** deploy. |
+Create it once (inside a backend container, after the first deploy):
 
-If you manage the admin account by hand instead, clear `ADMIN_USERNAME` /
-`ADMIN_EMAIL` / `ADMIN_PASSWORD` (the command then skips entirely) and use
-`python manage.py changepassword <username>` inside a backend container.
+```sh
+docker exec -it <backend-container> python manage.py createsuperuser \
+  --settings=core.settings.prod
+```
+
+Change the password later in `/admin/` (or with `python manage.py changepassword
+<username>`). Redeploys never touch it.
+
+> If the admin ever "disappears", the account was not deleted by the app — the
+> app is pointing at a different database/volume. See "Backups" and pin the
+> volume names.
 
 ### Email (optional, recommended)
 
@@ -217,8 +221,8 @@ ever lived in them as public:
       once; every customer is logged out and must sign in again. Announce it.
 - [ ] `POSTGRES_PASSWORD` (and `DB_PASSWORD` if it differs) — change in
       Dokploy, redeploy. Brief downtime while backend reconnects.
-- [ ] Admin password — set `ADMIN_RESET_PASSWORD=1` for one deploy, then set it
-      back to `0` (leaving it at `1` resets the admin password every deploy).
+- [ ] Admin password — changed in `/admin/` (or `changepassword`); it is **not**
+      managed by env vars, so nothing to reset on deploy.
 - [ ] SMTP credentials (`EMAIL_HOST_PASSWORD`) — rotate at the provider, update Dokploy.
 - [ ] Never commit `.env` or `*.sqlite3` again (both are git-ignored); never
       print secret values into logs, chat, or tickets.

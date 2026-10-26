@@ -34,13 +34,11 @@
 # Required env vars in Dokploy (compose service -> Environment):
 #   SECRET_KEY=<long random string>
 #   POSTGRES_PASSWORD=<strong db password>   (single source of DB credentials)
-#   ADMIN_USERNAME=<admin username>
-#   ADMIN_EMAIL=<admin email>
-#   ADMIN_PASSWORD=<admin password>
-#   ADMIN_RESET_PASSWORD=0                    (leave 0. Set 1 ONLY to force-reset
-#      the admin password on the next deploy; the migrate service runs
-#      ensure_admin every deploy, so leaving it at 1 resets the password
-#      every time.)
+#
+# The Django admin is NOT managed from the environment. Create it once inside a
+# backend container and manage the password in /admin/ or with changepassword:
+#   docker exec -it <backend-container> python manage.py createsuperuser \
+#     --settings=core.settings.prod
 #
 #   These are injected into the containers directly from this environment —
 #   there is no committed .env file. backend/.env.example is the local-dev
@@ -97,8 +95,14 @@ services:
       timeout: 5s
       retries: 5
 
-  # One-shot schema migration + admin bootstrap. Runs to completion BEFORE any
-  # backend replica starts, so replicas never race each other on migrations.
+  # One-shot schema migration. Runs to completion BEFORE any backend replica
+  # starts, so replicas never race each other on migrations.
+  #
+  # The admin account is deliberately NOT managed from the environment: there is
+  # no ADMIN_* env and no automatic create/reset. Create it once inside a backend
+  # container and manage the password in the Django admin / `changepassword`:
+  #   docker exec -it <backend-container> python manage.py createsuperuser \
+  #     --settings=core.settings.prod
   migrate:
     build:
       context: ./backend
@@ -109,10 +113,6 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: core.settings.prod
       SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in the Dokploy environment}
-      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
-      ADMIN_RESET_PASSWORD: ${ADMIN_RESET_PASSWORD:-0}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-purixiabd.com,www.purixiabd.com,admin.purixiabd.com}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://purixiabd.com,https://www.purixiabd.com}
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://purixiabd.com,https://www.purixiabd.com,https://admin.purixiabd.com}
@@ -124,7 +124,6 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
     command: >
       sh -c "python manage.py migrate --noinput --settings=core.settings.prod &&
-             python manage.py ensure_admin --settings=core.settings.prod &&
              python manage.py collectstatic --noinput --settings=core.settings.prod"
     depends_on:
       db:
