@@ -111,10 +111,32 @@ export function ProductDetail({ product }: ProductDetailProps) {
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[20px] font-poppins">
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-neutral-500 mb-4">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] text-neutral-500 mb-4 flex-wrap">
         <Link href="/" className="hover:text-orange transition-colors">Home</Link>
         <span aria-hidden="true">/</span>
         <Link href="/products" className="hover:text-orange transition-colors">Products</Link>
+        {product.category_name && (
+          <>
+            <span aria-hidden="true">/</span>
+            <Link
+              href={`/products?category=${product.category_slug || ''}`}
+              className="hover:text-orange transition-colors"
+            >
+              {product.category_name}
+            </Link>
+          </>
+        )}
+        {product.subcategory_name && (
+          <>
+            <span aria-hidden="true">/</span>
+            <Link
+              href={`/products?category=${product.category_slug || ''}&subcategory=${product.subcategory_slug || ''}`}
+              className="hover:text-orange transition-colors"
+            >
+              {product.subcategory_name}
+            </Link>
+          </>
+        )}
         <span aria-hidden="true">/</span>
         <span className="text-black font-semibold line-clamp-1">{product.name}</span>
       </nav>
@@ -158,13 +180,36 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
           {/* Right: Info (7 columns) */}
           <div className="lg:col-span-7 flex flex-col py-1">
-            <div className="flex justify-between items-start mb-2">
+            <div className="flex justify-between items-start mb-2 gap-2">
               <div>
+                {(product.category_name || product.subcategory_name) && (
+                  <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                    {product.category_name && (
+                      <Link
+                        href={`/products?category=${product.category_slug || ''}`}
+                        className="text-[10px] font-bold uppercase tracking-wider text-orange hover:underline"
+                      >
+                        {product.category_name}
+                      </Link>
+                    )}
+                    {product.subcategory_name && (
+                      <>
+                        <span className="text-neutral-300 text-[10px]">/</span>
+                        <Link
+                          href={`/products?category=${product.category_slug || ''}&subcategory=${product.subcategory_slug || ''}`}
+                          className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 hover:text-navy"
+                        >
+                          {product.subcategory_name}
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
                 <h1 className="text-[22px] font-bold text-black mb-1 leading-tight">{product.name}</h1>
               </div>
               <span
                 className={cn(
-                  'text-[9px] font-bold px-2 py-0.5 rounded-[4px] border uppercase tracking-wider',
+                  'text-[9px] font-bold px-2 py-0.5 rounded-[4px] border uppercase tracking-wider shrink-0',
                   inStock
                     ? 'bg-success-50 text-success border-success-100'
                     : 'bg-error-50 text-error border-error-100'

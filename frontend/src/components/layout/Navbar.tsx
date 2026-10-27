@@ -12,6 +12,7 @@ import {
   LogOut,
   Package,
   ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -28,6 +29,7 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = React.useState(false);
+  const [hoveredCatId, setHoveredCatId] = React.useState<number | null>(null);
 
   const profileRef = React.useRef<HTMLDivElement>(null);
 
@@ -181,9 +183,13 @@ export function Navbar() {
           <div
             className="relative shrink-0"
             onMouseEnter={() => setIsCategoriesOpen(true)}
-            onMouseLeave={() => setIsCategoriesOpen(false)}
+            onMouseLeave={() => {
+              setIsCategoriesOpen(false);
+              setHoveredCatId(null);
+            }}
           >
             <button
+              onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
               aria-expanded={isCategoriesOpen}
               aria-label="Categories"
               className="w-[140px] md:w-[180px] h-[40px] bg-orange rounded-t-[5px] flex items-center px-[12px] gap-[8px] text-white font-bold text-[12px] md:text-[14px] font-poppins"
@@ -194,20 +200,80 @@ export function Navbar() {
 
             {/* Categories Dropdown */}
             {isCategoriesOpen && (
-              <div className="absolute left-0 top-full w-[200px] bg-white rounded-b-[5px] shadow-lg z-[100]">
-                {categories && categories.length > 0 ? (
-                  categories.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/products?category=${cat.slug}`}
-                      className="flex items-center h-[42px] px-[12px] border-b border-neutral-300 last:border-0 text-navy hover:text-orange transition-colors font-poppins text-sm"
+              <div className="absolute left-0 top-full flex z-[100]">
+                {/* Main Category List */}
+                <div className="w-[220px] bg-white rounded-b-[5px] shadow-xl border border-neutral-100 py-1 max-h-[380px] overflow-y-auto">
+                  {categories && categories.length > 0 ? (
+                    categories.map((cat) => {
+                      const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+                      const isHovered = hoveredCatId === cat.id;
+                      return (
+                        <div
+                          key={cat.id}
+                          onMouseEnter={() => setHoveredCatId(cat.id)}
+                          className={cn(
+                            "flex items-center justify-between px-3 h-[42px] transition-colors font-poppins text-sm border-b border-neutral-100 last:border-0",
+                            isHovered ? "bg-surface text-orange font-medium" : "text-navy hover:text-orange"
+                          )}
+                        >
+                          <Link
+                            href={`/products?category=${cat.slug}`}
+                            onClick={() => {
+                              setIsCategoriesOpen(false);
+                              setHoveredCatId(null);
+                            }}
+                            className="flex-1 truncate"
+                          >
+                            {cat.name}
+                          </Link>
+                          {hasSubs && (
+                            <ChevronRight className="w-3.5 h-3.5 text-neutral-400 shrink-0 ml-1" />
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="px-[12px] py-3 text-[12px] text-neutral-500">No categories found</div>
+                  )}
+                </div>
+
+                {/* Subcategories Flyout Panel */}
+                {hoveredCatId && (() => {
+                  const activeCat = categories?.find((c) => c.id === hoveredCatId);
+                  if (!activeCat || !activeCat.subcategories || activeCat.subcategories.length === 0) return null;
+                  return (
+                    <div
+                      className="w-[220px] bg-white rounded-[5px] shadow-xl border border-neutral-100 p-2 ml-1 max-h-[380px] overflow-y-auto animate-in fade-in slide-in-from-left-2 duration-150"
+                      onMouseEnter={() => setHoveredCatId(activeCat.id)}
                     >
-                      {cat.name}
-                    </Link>
-                  ))
-                ) : (
-                  <div className="px-[12px] py-3 text-[12px] text-neutral-700">No categories found</div>
-                )}
+                      <div className="px-2 py-1.5 border-b border-neutral-100 mb-1">
+                        <Link
+                          href={`/products?category=${activeCat.slug}`}
+                          onClick={() => {
+                            setIsCategoriesOpen(false);
+                            setHoveredCatId(null);
+                          }}
+                          className="text-xs font-bold text-orange uppercase tracking-wider hover:underline"
+                        >
+                          All {activeCat.name}
+                        </Link>
+                      </div>
+                      {activeCat.subcategories.map((sub) => (
+                        <Link
+                          key={sub.id}
+                          href={`/products?category=${activeCat.slug}&subcategory=${sub.slug}`}
+                          onClick={() => {
+                            setIsCategoriesOpen(false);
+                            setHoveredCatId(null);
+                          }}
+                          className="block px-2 py-1.5 rounded text-xs text-neutral-700 hover:bg-surface hover:text-orange transition-colors font-poppins"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>

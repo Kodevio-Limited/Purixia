@@ -1,10 +1,21 @@
 import api from '../lib/axios';
-import { Category, CategoryDetail, Product, PaginatedResponse, ProductReview, ReviewSubmitPayload } from '../types';
+import { Category, CategoryDetail, Product, PaginatedResponse, ProductReview, ReviewSubmitPayload, Subcategory } from '../types';
 
 export const catalogService = {
   getCategories: async (): Promise<Category[]> => {
     const response = await api.get('/api/catalog/categories/');
     // Handle both paginated and non-paginated responses gracefully
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    if (response.data && Array.isArray(response.data.results)) {
+      return response.data.results;
+    }
+    return [];
+  },
+
+  getSubcategories: async (params?: { category?: string }): Promise<Subcategory[]> => {
+    const response = await api.get('/api/catalog/subcategories/', { params });
     if (Array.isArray(response.data)) {
       return response.data;
     }
@@ -21,6 +32,7 @@ export const catalogService = {
 
   getProducts: async (params?: {
     category?: string;
+    subcategory?: string;
     in_stock?: boolean;
     offered?: boolean;
     page?: number;
