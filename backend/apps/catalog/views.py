@@ -5,11 +5,30 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Category, Product
+from .models import Category, Product, Subcategory
 from .serializers import (
     CategoryListSerializer, CategorySerializer, ProductListSerializer,
-    ProductReviewCreateSerializer, ProductSerializer,
+    ProductReviewCreateSerializer, ProductSerializer, SubcategorySerializer,
 )
+
+
+class SubcategoryViewSet(viewsets.ModelViewSet):
+    queryset         = Subcategory.objects.select_related('category').all()
+    serializer_class = SubcategorySerializer
+    lookup_field     = 'slug'
+    pagination_class = None
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        category = self.request.query_params.get('category')
+        if category:
+            qs = qs.filter(category__slug=category)
+        return qs
+
+    def get_permissions(self):
+        if self.action in ('create', 'update', 'partial_update', 'destroy'):
+            return [IsAdminUser()]
+        return [AllowAny()]
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -21,7 +40,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return CategoryListSerializer if self.action == 'list' else CategorySerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().prefetch_related('subcategories')
         if self.action == 'retrieve':
             # Category detail embeds full products; prefetch everything the
             # nested ProductSerializer touches so it doesn't fire per-product
@@ -41,7 +60,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset         = Product.objects.select_related('category').all()
+    queryset         = Product.objects.select_related('category', 'subcategory').all()
     serializer_class = ProductSerializer
 
     def get_permissions(self):
@@ -76,10 +95,13 @@ class ProductViewSet(viewsets.ModelViewSet):
             )
 
         category = self.request.query_params.get('category')
+        subcategory = self.request.query_params.get('subcategory')
         in_stock = self.request.query_params.get('in_stock')
         offered  = self.request.query_params.get('offered')
         if category:
             qs = qs.filter(category__slug=category)
+        if subcategory:
+            qs = qs.filter(subcategory__slug=subcategory)
         if in_stock is not None:
             qs = qs.filter(in_stock=in_stock.lower() == 'true')
         if offered is not None and offered.lower() == 'true':

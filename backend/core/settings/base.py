@@ -134,6 +134,7 @@ JAZZMIN_SETTINGS = {
         'auth.Group': 'fas fa-users-cog',
         'users.User': 'fas fa-user',
         'catalog.Category': 'fas fa-tags',
+        'catalog.Subcategory': 'fas fa-tag',
         'catalog.Product': 'fas fa-box-open',
         'catalog.ProductImage': 'fas fa-images',
         'orders.Order': 'fas fa-shopping-cart',

@@ -19,8 +19,31 @@ class Category(models.Model):
         return self.name
 
 
+class Subcategory(models.Model):
+    category   = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
+    name       = models.CharField(max_length=200)
+    slug       = models.SlugField(max_length=220)
+    image      = models.ImageField(upload_to='subcategories/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = 'Subcategories'
+        ordering = ['name']
+        unique_together = ('category', 'slug')
+
+    def __str__(self):
+        return f"{self.category.name} - {self.name}"
+
+
 class Product(models.Model):
     category    = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    subcategory = models.ForeignKey(
+        Subcategory,
+        on_delete=models.SET_NULL,
+        related_name='products',
+        blank=True,
+        null=True,
+    )
     name        = models.CharField(max_length=300)
     title       = models.CharField(max_length=500)
     description = models.TextField(blank=True)
@@ -53,7 +76,15 @@ class Product(models.Model):
         factor = (Decimal(100) - Decimal(self.discount_percent)) / Decimal(100)
         return (self.price * factor).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
+    def clean(self):
+        super().clean()
+        if self.subcategory_id and self.category_id and self.subcategory.category_id != self.category_id:
+            from django.core.exceptions import ValidationError
+            raise ValidationError({'subcategory': f"'{self.subcategory.name}' does not belong to category '{self.category.name}'."})
+
     def save(self, *args, **kwargs):
+        if self.subcategory_id and not self.category_id:
+            self.category = self.subcategory.category
         self.in_stock = self.quantity > 0
         super().save(*args, **kwargs)
 

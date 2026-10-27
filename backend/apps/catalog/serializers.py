@@ -4,9 +4,18 @@ from django.db.models import Avg
 from rest_framework import serializers
 from .models import (
     Category, Product, ProductFeature, ProductImage, ProductReview,
-    ProductSpecification,
+    ProductSpecification, Subcategory,
 )
 from apps.orders.models import OrderItem, OrderStatus
+
+
+class SubcategorySerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
+
+    class Meta:
+        model = Subcategory
+        fields = ('id', 'category', 'category_name', 'category_slug', 'name', 'slug', 'image')
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -109,6 +118,10 @@ class ProductReviewCreateSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
+    subcategory_name = serializers.CharField(source='subcategory.name', read_only=True)
+    subcategory_slug = serializers.CharField(source='subcategory.slug', read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     features = ProductFeatureSerializer(many=True, read_only=True)
     specifications = ProductSpecificationSerializer(many=True, read_only=True)
@@ -120,13 +133,26 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Product
         fields = (
-            'id', 'category', 'name', 'title', 'description',
+            'id', 'category', 'category_name', 'category_slug',
+            'subcategory', 'subcategory_name', 'subcategory_slug',
+            'name', 'title', 'description',
             'price', 'discount_percent', 'discounted_price',
             'quantity', 'rating', 'in_stock', 'image',
             'images', 'features', 'specifications', 'reviews',
             'created_at', 'updated_at',
         )
         read_only_fields = ('in_stock', 'created_at', 'updated_at')
+
+    def validate(self, attrs):
+        category = attrs.get('category') or getattr(self.instance, 'category', None)
+        subcategory = attrs.get('subcategory') or getattr(self.instance, 'subcategory', None)
+        if subcategory and category and subcategory.category_id != category.id:
+            raise serializers.ValidationError({
+                'subcategory': f"'{subcategory.name}' does not belong to category '{category.name}'."
+            })
+        if subcategory and not category:
+            attrs['category'] = subcategory.category
+        return attrs
 
 
 class ProductListSerializer(serializers.ModelSerializer):
@@ -137,6 +163,10 @@ class ProductListSerializer(serializers.ModelSerializer):
     N+1 query storm a full serializer would cause on the catalog page.
     """
 
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
+    subcategory_name = serializers.CharField(source='subcategory.name', read_only=True)
+    subcategory_slug = serializers.CharField(source='subcategory.slug', read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     discounted_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     review_count = serializers.SerializerMethodField()
@@ -144,7 +174,9 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Product
         fields = (
-            'id', 'category', 'name', 'title', 'price', 'discount_percent',
+            'id', 'category', 'category_name', 'category_slug',
+            'subcategory', 'subcategory_name', 'subcategory_slug',
+            'name', 'title', 'price', 'discount_percent',
             'discounted_price', 'quantity', 'rating', 'in_stock', 'image',
             'images', 'review_count', 'created_at', 'updated_at',
         )
@@ -159,14 +191,17 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    subcategories = SubcategorySerializer(many=True, read_only=True)
     products = ProductSerializer(many=True, read_only=True)
 
     class Meta:
         model  = Category
-        fields = ('id', 'name', 'slug', 'image', 'products')
+        fields = ('id', 'name', 'slug', 'image', 'subcategories', 'products')
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
+    subcategories = SubcategorySerializer(many=True, read_only=True)
+
     class Meta:
         model  = Category
-        fields = ('id', 'name', 'slug', 'image')
+        fields = ('id', 'name', 'slug', 'image', 'subcategories')

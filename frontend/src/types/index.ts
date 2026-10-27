@@ -46,11 +46,22 @@ export interface EmailVerificationPayload {
   token: string;
 }
 
+export interface Subcategory {
+  id: number;
+  category: number;
+  category_name?: string;
+  category_slug?: string;
+  name: string;
+  slug: string;
+  image?: string | null;
+}
+
 export interface Category {
   id: number;
   name: string;
   slug: string;
   image: string | null;
+  subcategories?: Subcategory[];
 }
 
 export interface CategoryDetail extends Category {
@@ -94,6 +105,11 @@ export interface ReviewSubmitPayload {
 export interface Product {
   id: number;
   category: number;
+  category_name?: string;
+  category_slug?: string;
+  subcategory?: number | null;
+  subcategory_name?: string | null;
+  subcategory_slug?: string | null;
   name: string;
   title: string;
   description: string;

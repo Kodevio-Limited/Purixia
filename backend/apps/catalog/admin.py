@@ -1,6 +1,13 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Category, Product, ProductFeature, ProductImage, ProductReview, ProductSpecification
+from .models import Category, Product, ProductFeature, ProductImage, ProductReview, ProductSpecification, Subcategory
+
+
+class SubcategoryInline(admin.TabularInline):
+    model = Subcategory
+    extra = 1
+    prepopulated_fields = {'slug': ('name',)}
+    fields = ('name', 'slug', 'image')
 
 
 class ProductImageInline(admin.TabularInline):
@@ -36,9 +43,28 @@ class ProductReviewInline(admin.TabularInline):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'product_count')
+    list_display = ('name', 'slug', 'subcategory_count', 'product_count')
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
+    inlines = [SubcategoryInline]
+
+    def subcategory_count(self, obj):
+        count = obj.subcategories.count()
+        return format_html('<span class="badge badge-info">{}</span>', count)
+    subcategory_count.short_description = 'Subcategories'
+
+    def product_count(self, obj):
+        count = obj.products.count()
+        return format_html('<span class="badge badge-warning">{}</span>', count)
+    product_count.short_description = 'Products'
+
+
+@admin.register(Subcategory)
+class SubcategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'slug', 'product_count')
+    list_filter = ('category',)
+    search_fields = ('name', 'category__name')
+    prepopulated_fields = {'slug': ('name',)}
 
     def product_count(self, obj):
         count = obj.products.count()
@@ -48,15 +74,15 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'price_display', 'stock_badge', 'rating_stars', 'status_badge')
-    list_filter = ('category', 'in_stock', 'created_at')
+    list_display = ('name', 'category', 'subcategory', 'price_display', 'stock_badge', 'rating_stars', 'status_badge')
+    list_filter = ('category', 'subcategory', 'in_stock', 'created_at')
     search_fields = ('name', 'title', 'description')
     list_editable = ()
     readonly_fields = ('created_at', 'updated_at')
     inlines = [ProductImageInline, ProductFeatureInline, ProductSpecificationInline, ProductReviewInline]
     fieldsets = (
         ('Basic Info', {
-            'fields': ('name', 'title', 'category', 'description')
+            'fields': ('name', 'title', 'category', 'subcategory', 'description')
         }),
         ('Pricing & Stock', {
             'fields': ('price', 'discount_percent', 'quantity', 'in_stock'),
