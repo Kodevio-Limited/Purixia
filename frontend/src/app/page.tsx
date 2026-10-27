@@ -8,6 +8,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
 import { getImageUrl, formatPrice, cn } from '../lib/utils';
 import { ShoppingCart, Star, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Subcategory } from '../types';
 
 export default function HomePage() {
   const { data: banners } = useBanners();
@@ -16,6 +17,7 @@ export default function HomePage() {
   const { data: categories } = useCategories();
   const [currentBanner, setCurrentBanner] = React.useState(0);
   const [showAllMobileCategories, setShowAllMobileCategories] = React.useState(false);
+  const [selectedCategoryForSubs, setSelectedCategoryForSubs] = React.useState<string | null>(null);
 
   // Auto-slide banners
   React.useEffect(() => {
@@ -26,6 +28,26 @@ export default function HomePage() {
       return () => clearInterval(timer);
     }
   }, [banners]);
+
+  const categoriesWithSubs = React.useMemo(() => {
+    return categories?.filter((c) => c.subcategories && c.subcategories.length > 0) || [];
+  }, [categories]);
+
+  const displayedSubcategories = React.useMemo(() => {
+    if (!categories) return [];
+    if (selectedCategoryForSubs) {
+      const cat = categories.find((c) => c.slug === selectedCategoryForSubs);
+      return cat?.subcategories || [];
+    }
+    // Return subcategories across categories
+    const all: Subcategory[] = [];
+    categories.forEach((cat) => {
+      if (cat.subcategories) {
+        all.push(...cat.subcategories);
+      }
+    });
+    return all.slice(0, 12);
+  }, [categories, selectedCategoryForSubs]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -96,93 +118,164 @@ export default function HomePage() {
       </section>
 
       {/* Popular Categories Section */}
-      <section className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[20px] bg-white">
-        <div className="max-w-[1440px] mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-2">
-            <div>
-              <h2 className="text-[18px] md:text-[20px] font-bold text-black uppercase tracking-wider font-poppins">
-                Popular Categories
-              </h2>
-              <p className="text-[11px] md:text-[12px] text-neutral-500">
-                Explore our wide range of categories
-              </p>
-            </div>
-            {/* View all header button */}
-            <button
-              onClick={() => setShowAllMobileCategories(!showAllMobileCategories)}
-              className="text-orange text-[12px] font-bold uppercase tracking-wider flex items-center gap-1 hover:text-navy transition-colors py-1 px-2 rounded cursor-pointer"
-            >
-              <span className="hidden sm:inline">
-                {showAllMobileCategories ? 'Show Less' : 'View All'}
-              </span>
-              <span className="sm:hidden">
-                {showAllMobileCategories ? 'Less' : 'View All'}
-              </span>
-              <ChevronRight
-                className={cn(
-                  'w-3.5 h-3.5 transition-transform duration-200',
-                  showAllMobileCategories && 'rotate-90'
-                )}
-              />
-            </button>
-          </div>
-
-          {/* Categories Grid: 4 in a row for mobile view (Row 1: 4, Row 2: 4) */}
-          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-2 gap-y-4 sm:gap-x-4 sm:gap-y-6">
-            {(showAllMobileCategories ? categories : categories?.slice(0, 8))?.map((cat) => (
+      <section className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[15px] bg-white">
+        <div className="max-w-[1440px] mx-auto flex flex-col items-center">
+          <h2 className="text-[20px] font-bold text-black mb-1 uppercase tracking-wider">Popular Categories</h2>
+          <p className="text-[12px] text-neutral-700 mb-[20px]">Explore our wide range of categories</p>
+          
+          {/* Desktop Layout - Exact previous design with 80px circles & text-center */}
+          <div className="hidden md:flex flex-wrap gap-x-[28px] gap-y-[24px] justify-center w-full">
+            {categories?.slice(0, 8).map((cat) => (
               <Link 
                 key={cat.id} 
                 href={`/products?category=${cat.slug}`}
-                className="flex flex-col items-center group cursor-pointer"
+                className="flex flex-col items-center group min-w-[110px]"
               >
-                <div className="w-[62px] h-[62px] sm:w-[76px] sm:h-[76px] rounded-full bg-surface mb-1.5 overflow-hidden relative border border-neutral-200/80 group-hover:border-orange group-active:scale-95 transition-all shadow-sm group-hover:shadow-md flex items-center justify-center">
+                <div className="w-[80px] h-[80px] rounded-full bg-surface mb-2.5 overflow-hidden relative border border-neutral-100 group-hover:border-orange transition-all shadow-sm group-hover:shadow-md">
                   {cat.image ? (
                     <Image
                       src={getImageUrl(cat.image)}
                       alt={cat.name}
                       fill
-                      className="object-cover p-1.5 transition-transform group-hover:scale-105"
+                      className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-navy font-bold text-lg sm:text-xl bg-orange/5 group-hover:bg-orange/10 transition-colors">
+                    <div className="w-full h-full flex items-center justify-center text-neutral-700 font-bold text-xl">
                       {cat.name.charAt(0)}
                     </div>
                   )}
                 </div>
-                <span className="text-[11px] sm:text-[12px] font-semibold text-neutral-800 text-center line-clamp-2 leading-[1.2] group-hover:text-orange transition-colors tracking-tight">
+                <span className="text-[13px] font-bold text-black text-center whitespace-nowrap group-hover:text-orange transition-colors uppercase tracking-tight">
                   {cat.name}
                 </span>
-                {cat.subcategories && cat.subcategories.length > 0 && (
-                  <span className="text-[9px] text-neutral-400 mt-0.5 hidden sm:inline">
-                    {cat.subcategories.length} subcategories
-                  </span>
-                )}
               </Link>
             ))}
           </div>
 
-          {/* Mobile View All Trigger below the 2 rows */}
-          {categories && categories.length > 8 && (
-            <div className="mt-4 flex justify-center md:hidden">
+          {/* Mobile Layout - 4 in a row! (Row 1: 4, Row 2: 4) with View All */}
+          <div className="w-full md:hidden flex flex-col items-center">
+            <div className="grid grid-cols-4 gap-x-2 gap-y-3.5 w-full">
+              {(showAllMobileCategories ? categories : categories?.slice(0, 8))?.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/products?category=${cat.slug}`}
+                  className="flex flex-col items-center group cursor-pointer"
+                >
+                  <div className="w-[64px] h-[64px] rounded-full bg-surface mb-1.5 overflow-hidden relative border border-neutral-100 group-hover:border-orange transition-all shadow-sm flex items-center justify-center">
+                    {cat.image ? (
+                      <Image
+                        src={getImageUrl(cat.image)}
+                        alt={cat.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-neutral-700 font-bold text-lg">
+                        {cat.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[11px] font-bold text-black text-center line-clamp-2 leading-tight uppercase tracking-tight">
+                    {cat.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile View All Trigger */}
+            {categories && categories.length > 8 && (
               <button
                 onClick={() => setShowAllMobileCategories(!showAllMobileCategories)}
-                className="w-full py-2 px-4 rounded-xl border border-orange/40 bg-orange/5 text-orange font-bold text-xs flex items-center justify-center gap-1.5 active:bg-orange/10 transition-colors uppercase tracking-wider"
+                className="mt-3.5 text-orange text-[12px] font-bold uppercase tracking-wider flex items-center gap-1 hover:text-navy transition-colors py-1.5 px-4 rounded-full border border-orange/20 bg-orange/5"
               >
-                {showAllMobileCategories ? (
-                  <>
-                    Show Less <ChevronUp className="w-3.5 h-3.5" />
-                  </>
-                ) : (
-                  <>
-                    View All Categories ({categories.length}) <ChevronDown className="w-3.5 h-3.5" />
-                  </>
-                )}
+                {showAllMobileCategories ? 'Show Less' : `View All Categories (${categories.length})`}
+                <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', showAllMobileCategories && 'rotate-180')} />
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
+
+      {/* Popular Subcategories Section */}
+      {displayedSubcategories.length > 0 && (
+        <section className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[24px] bg-[#FAFBFD] border-y border-neutral-100">
+          <div className="max-w-[1440px] mx-auto">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 border-b border-neutral-200/60 pb-3 gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-orange text-white">
+                    Explore
+                  </span>
+                  <h2 className="text-[18px] md:text-[20px] font-bold text-black uppercase tracking-wider font-poppins">
+                    Popular Subcategories
+                  </h2>
+                </div>
+                <p className="text-[12px] text-neutral-600 mt-0.5">
+                  Find exactly what you need by browsing subcategories
+                </p>
+              </div>
+
+              {/* Category Filter Pills */}
+              {categoriesWithSubs.length > 0 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide max-w-full">
+                  <button
+                    onClick={() => setSelectedCategoryForSubs(null)}
+                    className={cn(
+                      "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all border",
+                      selectedCategoryForSubs === null
+                        ? "bg-navy text-white border-navy shadow-sm"
+                        : "bg-white text-neutral-700 border-neutral-200 hover:border-orange hover:text-orange"
+                    )}
+                  >
+                    All
+                  </button>
+                  {categoriesWithSubs.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategoryForSubs(cat.slug)}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all border",
+                        selectedCategoryForSubs === cat.slug
+                          ? "bg-navy text-white border-navy shadow-sm"
+                          : "bg-white text-neutral-700 border-neutral-200 hover:border-orange hover:text-orange"
+                      )}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Subcategories Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {displayedSubcategories.map((sub) => (
+                <Link
+                  key={sub.id}
+                  href={`/products?category=${sub.category_slug}&subcategory=${sub.slug}`}
+                  className="group bg-white rounded-xl p-3 border border-neutral-200/70 shadow-sm hover:shadow-md hover:border-orange transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-orange block mb-1">
+                      {sub.category_name}
+                    </span>
+                    <h3 className="text-[13px] font-bold text-navy group-hover:text-orange transition-colors line-clamp-1 font-poppins">
+                      {sub.name}
+                    </h3>
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-neutral-100">
+                    <span className="text-[11px] text-neutral-400 group-hover:text-navy transition-colors font-medium">
+                      View items
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-orange group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Popular Products Section */}
       <section className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[20px] bg-white">
