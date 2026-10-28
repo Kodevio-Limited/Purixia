@@ -25,7 +25,7 @@ const contactInfo = [
   },
   {
     icon: Phone,
-    label: 'Call / WhatsApp',
+    label: 'Call',
     value: '+880 1334-177276',
     href: 'tel:+8801334177276',
   },
@@ -286,8 +286,7 @@ export default function ContactUsPage() {
             <div className="bg-surface border border-orange/20 rounded-[20px] p-5">
               <h3 className="text-[13px] font-bold text-black mb-1">Prefer social?</h3>
               <p className="text-[12px] text-neutral-700 leading-relaxed">
-                Message us on WhatsApp or reach us through our Facebook page — links are in the
-                footer below.
+                Reach us through our Facebook page — links are in the footer below.
               </p>
             </div>
           </div>

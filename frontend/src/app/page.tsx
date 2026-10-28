@@ -7,7 +7,7 @@ import { useBanners } from '../hooks/useBanners';
 import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
 import { getImageUrl, formatPrice, cn } from '../lib/utils';
-import { ShoppingCart, Star, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShoppingCart, Star, ChevronRight } from 'lucide-react';
 import { Subcategory } from '../types';
 
 export default function HomePage() {
@@ -16,7 +16,6 @@ export default function HomePage() {
   const { data: offeredProducts } = useProducts({ offered: true });
   const { data: categories } = useCategories();
   const [currentBanner, setCurrentBanner] = React.useState(0);
-  const [showAllMobileCategories, setShowAllMobileCategories] = React.useState(false);
   const [selectedCategoryForSubs, setSelectedCategoryForSubs] = React.useState<string | null>(null);
 
   // Auto-slide banners
@@ -117,81 +116,82 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Popular Categories Section */}
+      {/* Shop by Category Section */}
       <section className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[15px] bg-white">
-        <div className="max-w-[1440px] mx-auto flex flex-col items-center">
-          <h2 className="text-[20px] font-bold text-black mb-1 uppercase tracking-wider">Popular Categories</h2>
-          <p className="text-[12px] text-neutral-700 mb-[20px]">Explore our wide range of categories</p>
-          
-          {/* Desktop Layout - Exact previous design with 80px circles & text-center */}
-          <div className="hidden md:flex flex-wrap gap-x-[28px] gap-y-[24px] justify-center w-full">
-            {categories?.slice(0, 8).map((cat) => (
-              <Link 
-                key={cat.id} 
-                href={`/products?category=${cat.slug}`}
-                className="flex flex-col items-center group min-w-[110px]"
-              >
-                <div className="w-[80px] h-[80px] rounded-full bg-surface mb-2.5 overflow-hidden relative border border-neutral-100 group-hover:border-orange transition-all shadow-sm group-hover:shadow-md">
-                  {cat.image ? (
-                    <Image
-                      src={getImageUrl(cat.image)}
-                      alt={cat.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-neutral-700 font-bold text-xl">
-                      {cat.name.charAt(0)}
+        <div className="max-w-[1440px] mx-auto">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3 sm:gap-4 mb-4">
+            <div className="min-w-0">
+              <h2 className="text-[20px] md:text-[22px] font-bold text-black leading-tight">
+                Shop by <span className="text-orange">Category</span>
+              </h2>
+              <span className="block w-10 h-[3px] bg-orange rounded-full mt-1.5 mb-2" />
+              <p className="text-[12px] text-neutral-700 leading-relaxed">
+                Explore our most popular gadget categories and find your perfect pick.
+              </p>
+            </div>
+            <Link
+              href="/products"
+              className="shrink-0 inline-flex items-center gap-1 h-[36px] px-4 mt-0.5 bg-white border border-neutral-200 rounded-[8px] text-[12px] font-bold text-black shadow-sm hover:border-orange hover:text-orange transition-colors"
+            >
+              View All <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* Category Cards — 4 per row on mobile */}
+          <div className="grid grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
+            {categories?.slice(0, 8).map((cat) => {
+              const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+              return (
+                <div key={cat.id} className="group relative">
+                  <Link
+                    href={`/products?category=${cat.slug}`}
+                    className="flex h-full flex-col items-center gap-1.5 rounded-[10px] border border-neutral-200 bg-white px-2 py-3 text-center transition-all group-hover:border-orange group-hover:shadow-[0_4px_15px_rgba(0,0,0,0.07)]"
+                  >
+                    <div className="relative w-10 h-10 shrink-0">
+                      {cat.image ? (
+                        <Image
+                          src={getImageUrl(cat.image)}
+                          alt={cat.name}
+                          fill
+                          className="object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center rounded-full bg-surface text-neutral-600 font-bold text-base">
+                          {cat.name.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[11px] sm:text-[12px] font-semibold text-black leading-tight line-clamp-2 group-hover:text-orange transition-colors">
+                      {cat.name}
+                    </span>
+                  </Link>
+
+                  {/* Subcategory Flyout (desktop hover) */}
+                  {hasSubs && (
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 hidden md:block invisible opacity-0 pointer-events-none group-hover:visible group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150">
+                      <div className="w-[200px] rounded-[10px] border border-neutral-100 bg-white p-2 shadow-xl">
+                        <Link
+                          href={`/products?category=${cat.slug}`}
+                          className="block px-2 py-1.5 mb-1 text-[11px] font-bold uppercase tracking-wider text-orange border-b border-neutral-100 hover:underline"
+                        >
+                          All {cat.name}
+                        </Link>
+                        {cat.subcategories!.map((sub) => (
+                          <Link
+                            key={sub.id}
+                            href={`/products?category=${cat.slug}&subcategory=${sub.slug}`}
+                            className="block px-2 py-1.5 rounded text-xs text-neutral-700 hover:bg-surface hover:text-orange transition-colors"
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
-                <span className="text-[13px] font-bold text-black text-center whitespace-nowrap group-hover:text-orange transition-colors uppercase tracking-tight">
-                  {cat.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-
-          {/* Mobile Layout - 4 in a row! (Row 1: 4, Row 2: 4) with View All */}
-          <div className="w-full md:hidden flex flex-col items-center">
-            <div className="grid grid-cols-4 gap-x-2 gap-y-3.5 w-full">
-              {(showAllMobileCategories ? categories : categories?.slice(0, 8))?.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/products?category=${cat.slug}`}
-                  className="flex flex-col items-center group cursor-pointer"
-                >
-                  <div className="w-[64px] h-[64px] rounded-full bg-surface mb-1.5 overflow-hidden relative border border-neutral-100 group-hover:border-orange transition-all shadow-sm flex items-center justify-center">
-                    {cat.image ? (
-                      <Image
-                        src={getImageUrl(cat.image)}
-                        alt={cat.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-neutral-700 font-bold text-lg">
-                        {cat.name.charAt(0)}
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-[11px] font-bold text-black text-center line-clamp-2 leading-tight uppercase tracking-tight">
-                    {cat.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-
-            {/* Mobile View All Trigger */}
-            {categories && categories.length > 8 && (
-              <button
-                onClick={() => setShowAllMobileCategories(!showAllMobileCategories)}
-                className="mt-3.5 text-orange text-[12px] font-bold uppercase tracking-wider flex items-center gap-1 hover:text-navy transition-colors py-1.5 px-4 rounded-full border border-orange/20 bg-orange/5"
-              >
-                {showAllMobileCategories ? 'Show Less' : `View All Categories (${categories.length})`}
-                <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', showAllMobileCategories && 'rotate-180')} />
-              </button>
-            )}
+              );
+            })}
           </div>
         </div>
       </section>
