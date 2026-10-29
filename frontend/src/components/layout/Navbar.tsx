@@ -13,6 +13,7 @@ import {
   Package,
   ChevronDown,
   ChevronRight,
+  MoreVertical,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -26,7 +27,8 @@ export function Navbar() {
   const { count, toggleDrawer } = useCart();
   const { data: categories } = useCategories();
 
-  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [expandedCatId, setExpandedCatId] = React.useState<number | null>(null);
   const [profileOpen, setProfileOpen] = React.useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = React.useState(false);
   const [hoveredCatId, setHoveredCatId] = React.useState<number | null>(null);
@@ -43,6 +45,17 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close the mobile menu on navigation, and collapse open categories when it closes
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen((open) => !open);
+    setExpandedCatId(null);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+    setExpandedCatId(null);
+  };
+
   const handleLogout = async () => {
     await logout();
     setProfileOpen(false);
@@ -52,13 +65,23 @@ export function Navbar() {
   return (
     <div className="w-full">
       {/* Top Navbar */}
-      <header className="w-full h-[64px] bg-navy flex items-center shadow-[0px_0px_4px_rgba(0,0,0,0.25)] sticky top-0 z-[100]">
-        <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] flex items-center justify-between relative">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            {/* Dark-background logo variant: orange symbol + white wordmark */}
-            <Image src="/brand-logo-dark.png" alt="Purixia BD" width={132} height={26} className="object-contain" priority />
-          </Link>
+      <header className="w-full bg-navy shadow-[0px_0px_4px_rgba(0,0,0,0.25)] sticky top-0 z-[100]">
+        <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] flex items-center justify-between relative h-[64px]">
+          {/* Mobile menu + Logo */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={toggleMobileMenu}
+              aria-label="Browse categories"
+              aria-expanded={mobileMenuOpen}
+              className="md:hidden w-[36px] h-[36px] border border-orange rounded-[18px] flex items-center justify-center text-orange hover:bg-orange/10 transition-colors"
+            >
+              <MoreVertical className="w-5 h-5" />
+            </button>
+            <Link href="/" className="flex items-center gap-2 shrink-0">
+              {/* Dark-background logo variant: orange symbol + white wordmark */}
+              <Image src="/brand-logo-dark.png" alt="Purixia BD" width={132} height={26} className="object-contain" priority />
+            </Link>
+          </div>
 
           {/* Search Bar - Desktop */}
           <div className="relative w-[440px] h-[36px] hidden md:flex items-center">
@@ -71,15 +94,6 @@ export function Navbar() {
               <Search className="w-4 h-4 text-white" />
             </button>
           </div>
-
-          {/* Search Icon - Mobile */}
-          <button
-            onClick={() => setSearchOpen(!searchOpen)}
-            aria-label="Search"
-            className="md:hidden w-[36px] h-[36px] border border-orange rounded-[18px] flex items-center justify-center text-orange hover:bg-orange/10 transition-colors"
-          >
-            <Search className="w-5 h-5" />
-          </button>
 
           {/* Actions */}
           <div className="flex items-center gap-[12px]">
@@ -158,11 +172,9 @@ export function Navbar() {
             </button>
           </div>
         </div>
-      </header>
 
-      {/* Mobile Search Panel */}
-      {searchOpen && (
-        <div className="md:hidden bg-navy px-4 pb-3 pt-0">
+        {/* Mobile search bar — always visible */}
+        <div className="md:hidden px-4 pb-3">
           <div className="relative w-full h-[36px] flex items-center">
             <input
               type="text"
@@ -174,7 +186,72 @@ export function Navbar() {
             </button>
           </div>
         </div>
-      )}
+
+        {/* Mobile three-dot menu — categories + subcategories */}
+        {mobileMenuOpen && (
+          <>
+            <button
+              aria-label="Close menu"
+              onClick={closeMobileMenu}
+              className="md:hidden fixed inset-0 z-0 bg-black/20"
+            />
+            <div className="md:hidden absolute left-0 right-0 top-full z-10 bg-white border-t border-neutral-100 shadow-xl max-h-[70vh] overflow-y-auto">
+              {categories && categories.length > 0 ? (
+                categories.map((cat) => {
+                  const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+                  const isExpanded = expandedCatId === cat.id;
+                  return (
+                    <div key={cat.id} className="border-b border-neutral-100 last:border-0">
+                      {hasSubs ? (
+                        <button
+                          onClick={() => setExpandedCatId(isExpanded ? null : cat.id)}
+                          aria-expanded={isExpanded}
+                          className="w-full flex items-center justify-between px-4 h-[46px] text-sm font-medium text-navy font-poppins"
+                        >
+                          {cat.name}
+                          <ChevronDown className={cn('w-4 h-4 text-neutral-400 transition-transform', isExpanded && 'rotate-180')} />
+                        </button>
+                      ) : (
+                        <Link
+                          href={`/products?category=${cat.slug}`}
+                          onClick={closeMobileMenu}
+                          className="w-full flex items-center justify-between px-4 h-[46px] text-sm font-medium text-navy font-poppins"
+                        >
+                          {cat.name}
+                          <ChevronRight className="w-4 h-4 text-neutral-400" />
+                        </Link>
+                      )}
+                      {hasSubs && isExpanded && (
+                        <div className="pb-2 bg-surface/70">
+                          <Link
+                            href={`/products?category=${cat.slug}`}
+                            onClick={closeMobileMenu}
+                            className="block px-8 py-2 text-[11px] font-bold uppercase tracking-wider text-orange"
+                          >
+                            All {cat.name}
+                          </Link>
+                          {cat.subcategories!.map((sub) => (
+                            <Link
+                              key={sub.id}
+                              href={`/products?category=${cat.slug}&subcategory=${sub.slug}`}
+                              onClick={closeMobileMenu}
+                              className="block px-8 py-2 text-xs text-neutral-700 font-poppins"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="px-4 py-3 text-[12px] text-neutral-500">No categories found</div>
+              )}
+            </div>
+          </>
+        )}
+      </header>
 
       {/* Bottom Navbar */}
       <nav className="w-full h-[40px] bg-surface flex items-center relative border-b border-neutral-100">
