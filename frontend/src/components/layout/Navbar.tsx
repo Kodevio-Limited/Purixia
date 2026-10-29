@@ -253,8 +253,8 @@ export function Navbar() {
         )}
       </header>
 
-      {/* Bottom Navbar */}
-      <nav className="w-full h-[40px] bg-surface flex items-center relative border-b border-neutral-100">
+      {/* Bottom Navbar — desktop only (mobile uses the three-dot menu) */}
+      <nav className="hidden md:flex w-full h-[40px] bg-surface items-center relative border-b border-neutral-100">
         <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] flex items-center shrink-0">
           {/* Categories Button + Dropdown: hover is handled on the wrapper so moving from the button into the panel keeps it open */}
           <div
