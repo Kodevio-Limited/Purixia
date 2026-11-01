@@ -13,7 +13,8 @@ import {
   Package,
   ChevronDown,
   ChevronRight,
-  MoreVertical,
+  Menu,
+  X,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -71,11 +72,11 @@ export function Navbar() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={toggleMobileMenu}
-              aria-label="Browse categories"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Browse categories'}
               aria-expanded={mobileMenuOpen}
               className="md:hidden w-[36px] h-[36px] border border-orange rounded-[18px] flex items-center justify-center text-orange hover:bg-orange/10 transition-colors"
             >
-              <MoreVertical className="w-5 h-5" />
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <Link href="/" className="flex items-center gap-2 shrink-0">
               {/* Dark-background logo variant: orange symbol + white wordmark */}
