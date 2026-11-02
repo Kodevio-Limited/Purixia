@@ -20,8 +20,12 @@ class SubcategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if not (self.request.user and self.request.user.is_staff):
+        is_staff = bool(self.request.user and self.request.user.is_staff)
+        include_inactive = self.request.query_params.get('include_inactive') == 'true'
+
+        if not (is_staff and include_inactive):
             qs = qs.filter(category__is_active=True)
+
         category = self.request.query_params.get('category')
         if category:
             qs = qs.filter(category__slug=category)
@@ -43,12 +47,18 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset().prefetch_related('subcategories')
-        if not (self.request.user and self.request.user.is_staff):
-            qs = qs.filter(is_active=True)
+        is_staff = bool(self.request.user and self.request.user.is_staff)
+        include_inactive = self.request.query_params.get('include_inactive') == 'true'
+        is_active_param = self.request.query_params.get('is_active')
+
+        if is_staff and include_inactive:
+            pass
+        elif is_staff and is_active_param is not None:
+            if is_active_param.lower() != 'all':
+                qs = qs.filter(is_active=is_active_param.lower() == 'true')
         else:
-            is_active = self.request.query_params.get('is_active')
-            if is_active is not None:
-                qs = qs.filter(is_active=is_active.lower() == 'true')
+            qs = qs.filter(is_active=True)
+
         if self.action == 'retrieve':
             # Category detail embeds full products; prefetch everything the
             # nested ProductSerializer touches so it doesn't fire per-product
@@ -102,12 +112,18 @@ class ProductViewSet(viewsets.ModelViewSet):
                 'images', 'features', 'specifications', 'reviews',
             )
 
-        if not (self.request.user and self.request.user.is_staff):
-            qs = qs.filter(is_active=True, category__is_active=True)
+        is_staff = bool(self.request.user and self.request.user.is_staff)
+        include_inactive = self.request.query_params.get('include_inactive') == 'true'
+        is_active_param = self.request.query_params.get('is_active')
+
+        if is_staff and include_inactive:
+            pass  # Staff explicitly requested to include inactive products
+        elif is_staff and is_active_param is not None:
+            if is_active_param.lower() != 'all':
+                qs = qs.filter(is_active=is_active_param.lower() == 'true')
         else:
-            is_active = self.request.query_params.get('is_active')
-            if is_active is not None:
-                qs = qs.filter(is_active=is_active.lower() == 'true')
+            # Default for all storefront queries (customers and staff browsing):
+            qs = qs.filter(is_active=True, category__is_active=True)
 
         category = self.request.query_params.get('category')
         subcategory = self.request.query_params.get('subcategory')

@@ -20,10 +20,14 @@ function ProductsContent() {
   const offered = searchParams.get('offered') === 'true';
 
   const { data: categories, isLoading: isCategoriesLoading } = useCategories();
+  const activeCategories = React.useMemo(() => {
+    return categories?.filter((c) => c.is_active !== false) || [];
+  }, [categories]);
+
   const currentCategory = React.useMemo(() => {
-    if (!categories || !activeCategory) return null;
-    return categories.find((c) => c.slug === activeCategory) || null;
-  }, [categories, activeCategory]);
+    if (activeCategories.length === 0 || !activeCategory) return null;
+    return activeCategories.find((c) => c.slug === activeCategory) || null;
+  }, [activeCategories, activeCategory]);
 
   const {
     data: products,
@@ -112,7 +116,7 @@ function ProductsContent() {
           Filter by Category
         </h2>
         <CategoryList
-          categories={categories}
+          categories={activeCategories}
           isLoading={isCategoriesLoading}
           activeSlug={activeCategory}
           onSelect={handleSelectCategory}

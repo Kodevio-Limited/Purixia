@@ -41,7 +41,9 @@ export function ProductGrid({
     );
   }
 
-  if (!products || products.length === 0) {
+  const visibleProducts = products?.filter((p) => p.is_active !== false) || [];
+
+  if (visibleProducts.length === 0) {
     return (
       <EmptyState
         icon={<ShoppingBag className="w-8 h-8" />}
@@ -55,7 +57,7 @@ export function ProductGrid({
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-      {products.map((product) => (
+      {visibleProducts.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
     </div>

@@ -9,11 +9,15 @@ class BannerViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        # Only active banners are public; staff can view all or filter by is_active
-        if self.request.user and self.request.user.is_staff:
-            is_active = self.request.query_params.get('is_active')
-            if is_active is not None:
-                return Banner.objects.filter(is_active=is_active.lower() == 'true')
+        is_staff = bool(self.request.user and self.request.user.is_staff)
+        include_inactive = self.request.query_params.get('include_inactive') == 'true'
+        is_active_param = self.request.query_params.get('is_active')
+
+        if is_staff and include_inactive:
+            return Banner.objects.all()
+        elif is_staff and is_active_param is not None:
+            if is_active_param.lower() != 'all':
+                return Banner.objects.filter(is_active=is_active_param.lower() == 'true')
             return Banner.objects.all()
         return Banner.objects.filter(is_active=True)
 

@@ -18,44 +18,60 @@ export default function HomePage() {
   const [currentBanner, setCurrentBanner] = React.useState(0);
   const [selectedCategoryForSubs, setSelectedCategoryForSubs] = React.useState<string | null>(null);
 
+  const activeBanners = React.useMemo(() => {
+    return banners?.filter((b) => b.is_active !== false) || [];
+  }, [banners]);
+
+  const activeCategories = React.useMemo(() => {
+    return categories?.filter((c) => c.is_active !== false) || [];
+  }, [categories]);
+
+  const activeProducts = React.useMemo(() => {
+    return products?.results?.filter((p) => p.is_active !== false) || [];
+  }, [products]);
+
+  const activeOfferedProducts = React.useMemo(() => {
+    return offeredProducts?.results?.filter((p) => p.is_active !== false) || [];
+  }, [offeredProducts]);
+
   // Auto-slide banners
   React.useEffect(() => {
-    if (banners && banners.length > 1) {
+    if (activeBanners && activeBanners.length > 1) {
       const timer = setInterval(() => {
-        setCurrentBanner((prev) => (prev + 1) % banners.length);
+        setCurrentBanner((prev) => (prev + 1) % activeBanners.length);
       }, 5000);
       return () => clearInterval(timer);
     }
-  }, [banners]);
+  }, [activeBanners]);
 
   const categoriesWithSubs = React.useMemo(() => {
-    return categories?.filter((c) => c.subcategories && c.subcategories.length > 0) || [];
-  }, [categories]);
+    return activeCategories.filter((c) => c.subcategories && c.subcategories.length > 0);
+  }, [activeCategories]);
 
   const displayedSubcategories = React.useMemo(() => {
-    if (!categories) return [];
+    if (activeCategories.length === 0) return [];
     if (selectedCategoryForSubs) {
-      const cat = categories.find((c) => c.slug === selectedCategoryForSubs);
+      const cat = activeCategories.find((c) => c.slug === selectedCategoryForSubs);
       return cat?.subcategories || [];
     }
-    // Return subcategories across categories
+    // Return subcategories across active categories
     const all: Subcategory[] = [];
-    categories.forEach((cat) => {
+    activeCategories.forEach((cat) => {
       if (cat.subcategories) {
         all.push(...cat.subcategories);
       }
     });
     return all.slice(0, 12);
-  }, [categories, selectedCategoryForSubs]);
+  }, [activeCategories, selectedCategoryForSubs]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
       {/* Hero Banner Section */}
       <section className="w-full px-4 sm:px-6 md:px-[40px] lg:px-[80px] py-[10px]">
         <div className="max-w-[1440px] mx-auto relative h-[200px] sm:h-[280px] md:h-[360px] bg-grad-hero rounded-[20px] overflow-hidden shadow-sm">
-          {banners && banners.length > 0 ? (
+          {activeBanners && activeBanners.length > 0 ? (
             <div className="relative w-full h-full">
-              {banners.map((banner, index) => (
+              {activeBanners.map((banner, index) => (
                 <div
                   key={banner.id}
                   className={cn(
@@ -84,9 +100,9 @@ export default function HomePage() {
               ))}
               
               {/* Banner Pagination Dots */}
-              {banners.length > 1 && (
+              {activeBanners.length > 1 && (
                 <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-20" role="group" aria-label="Banner navigation">
-                  {banners.map((_, i) => (
+                  {activeBanners.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setCurrentBanner(i)}
@@ -291,7 +307,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[20px]">
-          {products?.results?.slice(0, 4).map((product) => (
+          {activeProducts.slice(0, 4).map((product) => (
             <Link 
               key={product.id} 
               href={`/products/${product.id}`}
@@ -356,9 +372,9 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {offeredProducts?.results && offeredProducts.results.length > 0 ? (
+          {activeOfferedProducts && activeOfferedProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[20px]">
-              {offeredProducts.results.slice(0, 4).map((product) => (
+              {activeOfferedProducts.slice(0, 4).map((product) => (
                 <Link
                   key={product.id}
                   href={`/products/${product.id}`}

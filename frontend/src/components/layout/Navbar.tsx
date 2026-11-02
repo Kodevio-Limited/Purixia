@@ -27,6 +27,7 @@ export function Navbar() {
   const { user, isLoggedIn, logout } = useAuth();
   const { count, toggleDrawer } = useCart();
   const { data: categories } = useCategories();
+  const activeCategories = React.useMemo(() => categories?.filter((c) => c.is_active !== false) || [], [categories]);
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [expandedCatId, setExpandedCatId] = React.useState<number | null>(null);
@@ -197,8 +198,8 @@ export function Navbar() {
               className="md:hidden fixed inset-0 z-0 bg-black/20"
             />
             <div className="md:hidden absolute left-0 right-0 top-full z-10 bg-white border-t border-neutral-100 shadow-xl max-h-[70vh] overflow-y-auto">
-              {categories && categories.length > 0 ? (
-                categories.map((cat) => {
+              {activeCategories && activeCategories.length > 0 ? (
+                activeCategories.map((cat) => {
                   const hasSubs = cat.subcategories && cat.subcategories.length > 0;
                   const isExpanded = expandedCatId === cat.id;
                   return (
@@ -281,8 +282,8 @@ export function Navbar() {
               <div className="absolute left-0 top-full flex z-[100]">
                 {/* Main Category List */}
                 <div className="w-[220px] bg-white rounded-b-[5px] shadow-xl border border-neutral-100 py-1 max-h-[380px] overflow-y-auto">
-                  {categories && categories.length > 0 ? (
-                    categories.map((cat) => {
+                  {activeCategories && activeCategories.length > 0 ? (
+                    activeCategories.map((cat) => {
                       const hasSubs = cat.subcategories && cat.subcategories.length > 0;
                       const isHovered = hoveredCatId === cat.id;
                       return (
@@ -317,7 +318,7 @@ export function Navbar() {
 
                 {/* Subcategories Flyout Panel */}
                 {hoveredCatId && (() => {
-                  const activeCat = categories?.find((c) => c.id === hoveredCatId);
+                  const activeCat = activeCategories.find((c) => c.id === hoveredCatId);
                   if (!activeCat || !activeCat.subcategories || activeCat.subcategories.length === 0) return null;
                   return (
                     <div

@@ -219,15 +219,25 @@ class ActiveStatusTests(APITestCase):
         self.assertNotIn('Inactive Prod', names)
         self.assertNotIn('Prod in Inactive Cat', names)
 
-    def test_staff_user_can_see_all_and_filter(self):
+    def test_staff_user_defaults_to_active_and_can_opt_in_to_inactive(self):
         self.client.force_authenticate(self.staff_user)
+        # Default without params: storefront behavior (only active items)
         res = self.client.get('/api/catalog/products/')
+        self.assertEqual(res.status_code, 200)
+        names = [p['name'] for p in res.data['results']]
+        self.assertIn('Active Prod', names)
+        self.assertNotIn('Inactive Prod', names)
+        self.assertNotIn('Prod in Inactive Cat', names)
+
+        # Explicitly opt-in with include_inactive=true
+        res = self.client.get('/api/catalog/products/?include_inactive=true')
         self.assertEqual(res.status_code, 200)
         names = [p['name'] for p in res.data['results']]
         self.assertIn('Active Prod', names)
         self.assertIn('Inactive Prod', names)
         self.assertIn('Prod in Inactive Cat', names)
 
+        # Filter by is_active=false
         res = self.client.get('/api/catalog/products/?is_active=false')
         self.assertEqual(res.status_code, 200)
         names = [p['name'] for p in res.data['results']]

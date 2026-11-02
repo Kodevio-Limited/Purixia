@@ -27,7 +27,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (isError) {
+  if (isError || (product && product.is_active === false)) {
     return (
       <PageWrapper className="flex flex-col items-center justify-center min-h-[50vh] text-center">
         <h2 className="text-xl font-bold text-error">Product not found</h2>

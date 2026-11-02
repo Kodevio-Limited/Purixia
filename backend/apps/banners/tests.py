@@ -22,9 +22,17 @@ class BannerActiveTests(APITestCase):
         self.assertIn('Active Banner', titles)
         self.assertNotIn('Inactive Banner', titles)
 
-    def test_staff_user_sees_all_banners(self):
+    def test_staff_user_defaults_to_active_and_can_opt_in(self):
         self.client.force_authenticate(self.staff_user)
+        # Default without params: only active banners
         res = self.client.get('/api/banners/')
+        self.assertEqual(res.status_code, 200)
+        titles = [b['title'] for b in res.data]
+        self.assertIn('Active Banner', titles)
+        self.assertNotIn('Inactive Banner', titles)
+
+        # Explicitly opt-in with include_inactive=true
+        res = self.client.get('/api/banners/?include_inactive=true')
         self.assertEqual(res.status_code, 200)
         titles = [b['title'] for b in res.data]
         self.assertIn('Active Banner', titles)
