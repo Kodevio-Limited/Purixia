@@ -10,6 +10,7 @@ class BannerAdmin(admin.ModelAdmin):
     list_editable = ('order',)
     search_fields = ('title',)
     readonly_fields = ('created_at',)
+    actions = ['mark_as_active', 'mark_as_inactive']
 
     fieldsets = (
         ('Banner Content', {
@@ -36,3 +37,13 @@ class BannerAdmin(admin.ModelAdmin):
         return format_html('<span class="badge badge-secondary">Inactive</span>')
     status_badge.short_description = 'Status'
     status_badge.admin_order_field = 'is_active'
+
+    def mark_as_active(self, request, queryset):
+        count = queryset.update(is_active=True)
+        self.message_user(request, f'{count} banner(s) marked as active.')
+    mark_as_active.short_description = 'Mark selected banners as Active'
+
+    def mark_as_inactive(self, request, queryset):
+        count = queryset.update(is_active=False)
+        self.message_user(request, f'{count} banner(s) marked as inactive.')
+    mark_as_inactive.short_description = 'Mark selected banners as Inactive'

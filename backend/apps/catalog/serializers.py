@@ -137,7 +137,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'subcategory', 'subcategory_name', 'subcategory_slug',
             'name', 'title', 'description',
             'price', 'discount_percent', 'discounted_price',
-            'quantity', 'rating', 'in_stock', 'image',
+            'quantity', 'rating', 'in_stock', 'is_active', 'image',
             'images', 'features', 'specifications', 'reviews',
             'created_at', 'updated_at',
         )
@@ -177,7 +177,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             'id', 'category', 'category_name', 'category_slug',
             'subcategory', 'subcategory_name', 'subcategory_slug',
             'name', 'title', 'price', 'discount_percent',
-            'discounted_price', 'quantity', 'rating', 'in_stock', 'image',
+            'discounted_price', 'quantity', 'rating', 'in_stock', 'is_active', 'image',
             'images', 'review_count', 'created_at', 'updated_at',
         )
         read_only_fields = ('in_stock', 'created_at', 'updated_at')
@@ -192,11 +192,18 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = SubcategorySerializer(many=True, read_only=True)
-    products = ProductSerializer(many=True, read_only=True)
+    products = serializers.SerializerMethodField()
 
     class Meta:
         model  = Category
-        fields = ('id', 'name', 'slug', 'image', 'subcategories', 'products')
+        fields = ('id', 'name', 'slug', 'image', 'is_active', 'subcategories', 'products')
+
+    def get_products(self, obj):
+        qs = obj.products.all()
+        request = self.context.get('request')
+        if not (request and request.user and request.user.is_staff):
+            qs = qs.filter(is_active=True)
+        return ProductSerializer(qs, many=True, context=self.context).data
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
@@ -204,4 +211,4 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = Category
-        fields = ('id', 'name', 'slug', 'image', 'subcategories')
+        fields = ('id', 'name', 'slug', 'image', 'is_active', 'subcategories')

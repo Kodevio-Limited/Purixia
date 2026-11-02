@@ -43,9 +43,12 @@ class ProductReviewInline(admin.TabularInline):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'subcategory_count', 'product_count')
-    prepopulated_fields = {'slug': ('name',)}
+    list_display = ('name', 'slug', 'subcategory_count', 'product_count', 'status_badge')
+    list_filter = ('is_active',)
     search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
+    fields = ('name', 'slug', 'image', 'is_active')
+    actions = ['mark_as_active', 'mark_as_inactive']
     inlines = [SubcategoryInline]
 
     def subcategory_count(self, obj):
@@ -57,6 +60,23 @@ class CategoryAdmin(admin.ModelAdmin):
         count = obj.products.count()
         return format_html('<span class="badge badge-warning">{}</span>', count)
     product_count.short_description = 'Products'
+
+    def status_badge(self, obj):
+        if obj.is_active:
+            return format_html('<span class="badge badge-success">Active</span>')
+        return format_html('<span class="badge badge-secondary">Inactive</span>')
+    status_badge.short_description = 'Status'
+    status_badge.admin_order_field = 'is_active'
+
+    def mark_as_active(self, request, queryset):
+        count = queryset.update(is_active=True)
+        self.message_user(request, f'{count} category(ies) marked as active.')
+    mark_as_active.short_description = 'Mark selected categories as Active'
+
+    def mark_as_inactive(self, request, queryset):
+        count = queryset.update(is_active=False)
+        self.message_user(request, f'{count} category(ies) marked as inactive.')
+    mark_as_inactive.short_description = 'Mark selected categories as Inactive'
 
 
 @admin.register(Subcategory)
@@ -75,18 +95,19 @@ class SubcategoryAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'subcategory', 'price_display', 'stock_badge', 'rating_stars', 'status_badge')
-    list_filter = ('category', 'subcategory', 'in_stock', 'created_at')
+    list_filter = ('is_active', 'category', 'subcategory', 'in_stock', 'created_at')
     search_fields = ('name', 'title', 'description')
     list_editable = ()
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('in_stock', 'created_at', 'updated_at')
+    actions = ['mark_as_active', 'mark_as_inactive']
     inlines = [ProductImageInline, ProductFeatureInline, ProductSpecificationInline, ProductReviewInline]
     fieldsets = (
         ('Basic Info', {
-            'fields': ('name', 'title', 'category', 'subcategory', 'description')
+            'fields': ('name', 'title', 'category', 'subcategory', 'description', 'is_active')
         }),
         ('Pricing & Stock', {
             'fields': ('price', 'discount_percent', 'quantity', 'in_stock'),
-            'description': 'Offer % set here drives the sale price shown on the site (0 = no offer).',
+            'description': 'Offer % set here drives the sale price shown on the site (0 = no offer). In-stock is automatically derived from quantity.',
         }),
         ('Media', {
             'fields': ('image',)
@@ -123,8 +144,18 @@ class ProductAdmin(admin.ModelAdmin):
     rating_stars.short_description = 'Rating'
 
     def status_badge(self, obj):
-        if obj.in_stock:
+        if obj.is_active:
             return format_html('<span class="badge badge-success">Active</span>')
         return format_html('<span class="badge badge-secondary">Inactive</span>')
     status_badge.short_description = 'Status'
-    status_badge.admin_order_field = 'in_stock'
+    status_badge.admin_order_field = 'is_active'
+
+    def mark_as_active(self, request, queryset):
+        count = queryset.update(is_active=True)
+        self.message_user(request, f'{count} product(s) marked as active.')
+    mark_as_active.short_description = 'Mark selected products as Active'
+
+    def mark_as_inactive(self, request, queryset):
+        count = queryset.update(is_active=False)
+        self.message_user(request, f'{count} product(s) marked as inactive.')
+    mark_as_inactive.short_description = 'Mark selected products as Inactive'

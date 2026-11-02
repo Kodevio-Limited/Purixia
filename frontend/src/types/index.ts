@@ -61,6 +61,7 @@ export interface Category {
   name: string;
   slug: string;
   image: string | null;
+  is_active?: boolean;
   subcategories?: Subcategory[];
 }
 
@@ -119,6 +120,7 @@ export interface Product {
   quantity: number;
   rating: string;
   in_stock: boolean;
+  is_active?: boolean;
   image: string | null;
   images: ProductImage[];
   // Only present on list/grid payloads (see ProductListSerializer).

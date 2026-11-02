@@ -188,3 +188,78 @@ class SubcategoryTests(APITestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn('subcategory', serializer.errors)
 
+
+class ActiveStatusTests(APITestCase):
+    def setUp(self):
+        self.staff_user = User.objects.create_superuser(username='admin', email='admin@example.com', password=PASSWORD)
+        self.active_cat = Category.objects.create(name='Active Cat', slug='active-cat', is_active=True)
+        self.inactive_cat = Category.objects.create(name='Inactive Cat', slug='inactive-cat', is_active=False)
+        self.active_prod = Product.objects.create(
+            category=self.active_cat, name='Active Prod', title='Active', price=Decimal('100.00'), quantity=5, is_active=True,
+        )
+        self.inactive_prod = Product.objects.create(
+            category=self.active_cat, name='Inactive Prod', title='Inactive', price=Decimal('200.00'), quantity=5, is_active=False,
+        )
+        self.prod_in_inactive_cat = Product.objects.create(
+            category=self.inactive_cat, name='Prod in Inactive Cat', title='Hidden', price=Decimal('300.00'), quantity=5, is_active=True,
+        )
+
+    def test_public_user_only_sees_active_categories(self):
+        res = self.client.get('/api/catalog/categories/')
+        self.assertEqual(res.status_code, 200)
+        slugs = [c['slug'] for c in res.data]
+        self.assertIn('active-cat', slugs)
+        self.assertNotIn('inactive-cat', slugs)
+
+    def test_public_user_only_sees_active_products_in_active_categories(self):
+        res = self.client.get('/api/catalog/products/')
+        self.assertEqual(res.status_code, 200)
+        names = [p['name'] for p in res.data['results']]
+        self.assertIn('Active Prod', names)
+        self.assertNotIn('Inactive Prod', names)
+        self.assertNotIn('Prod in Inactive Cat', names)
+
+    def test_staff_user_can_see_all_and_filter(self):
+        self.client.force_authenticate(self.staff_user)
+        res = self.client.get('/api/catalog/products/')
+        self.assertEqual(res.status_code, 200)
+        names = [p['name'] for p in res.data['results']]
+        self.assertIn('Active Prod', names)
+        self.assertIn('Inactive Prod', names)
+        self.assertIn('Prod in Inactive Cat', names)
+
+        res = self.client.get('/api/catalog/products/?is_active=false')
+        self.assertEqual(res.status_code, 200)
+        names = [p['name'] for p in res.data['results']]
+        self.assertIn('Inactive Prod', names)
+        self.assertNotIn('Active Prod', names)
+
+    def test_admin_actions_mark_active_and_inactive(self):
+        from django.contrib.admin.sites import AdminSite
+        from apps.catalog.admin import CategoryAdmin, ProductAdmin
+        from unittest.mock import Mock
+
+        site = AdminSite()
+        cat_admin = CategoryAdmin(Category, site)
+        prod_admin = ProductAdmin(Product, site)
+        request = Mock()
+
+        # Category admin actions
+        cat_admin.mark_as_inactive(request, Category.objects.filter(id=self.active_cat.id))
+        self.active_cat.refresh_from_db()
+        self.assertFalse(self.active_cat.is_active)
+
+        cat_admin.mark_as_active(request, Category.objects.filter(id=self.active_cat.id))
+        self.active_cat.refresh_from_db()
+        self.assertTrue(self.active_cat.is_active)
+
+        # Product admin actions
+        prod_admin.mark_as_inactive(request, Product.objects.filter(id=self.active_prod.id))
+        self.active_prod.refresh_from_db()
+        self.assertFalse(self.active_prod.is_active)
+
+        prod_admin.mark_as_active(request, Product.objects.filter(id=self.active_prod.id))
+        self.active_prod.refresh_from_db()
+        self.assertTrue(self.active_prod.is_active)
+
+

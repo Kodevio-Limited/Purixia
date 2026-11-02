@@ -20,6 +20,8 @@ class SubcategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if not (self.request.user and self.request.user.is_staff):
+            qs = qs.filter(category__is_active=True)
         category = self.request.query_params.get('category')
         if category:
             qs = qs.filter(category__slug=category)
@@ -41,6 +43,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset().prefetch_related('subcategories')
+        if not (self.request.user and self.request.user.is_staff):
+            qs = qs.filter(is_active=True)
+        else:
+            is_active = self.request.query_params.get('is_active')
+            if is_active is not None:
+                qs = qs.filter(is_active=is_active.lower() == 'true')
         if self.action == 'retrieve':
             # Category detail embeds full products; prefetch everything the
             # nested ProductSerializer touches so it doesn't fire per-product
@@ -93,6 +101,13 @@ class ProductViewSet(viewsets.ModelViewSet):
             qs = qs.prefetch_related(
                 'images', 'features', 'specifications', 'reviews',
             )
+
+        if not (self.request.user and self.request.user.is_staff):
+            qs = qs.filter(is_active=True, category__is_active=True)
+        else:
+            is_active = self.request.query_params.get('is_active')
+            if is_active is not None:
+                qs = qs.filter(is_active=is_active.lower() == 'true')
 
         category = self.request.query_params.get('category')
         subcategory = self.request.query_params.get('subcategory')
