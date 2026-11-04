@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseRedirect
+from django.urls import path, reverse
 from django.utils.html import format_html
 from .models import Category, Product, ProductFeature, ProductImage, ProductReview, ProductSpecification, Subcategory
 
@@ -61,11 +64,44 @@ class CategoryAdmin(admin.ModelAdmin):
         return format_html('<span class="badge badge-warning">{}</span>', count)
     product_count.short_description = 'Products'
 
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                '<path:object_id>/toggle-active/',
+                self.admin_site.admin_view(self.toggle_active),
+                name='catalog_category_toggle_active',
+            ),
+        ]
+        return custom_urls + urls
+
+    def toggle_active(self, request, object_id):
+        if not self.has_change_permission(request):
+            raise PermissionDenied
+        obj = self.get_object(request, object_id)
+        if obj is not None:
+            obj.is_active = not obj.is_active
+            obj.save(update_fields=['is_active'])
+            status_text = 'Active' if obj.is_active else 'Inactive'
+            self.message_user(request, f'Category "{obj.name}" is now {status_text}.')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER') or reverse('admin:catalog_category_changelist'))
+
     def status_badge(self, obj):
+        toggle_url = reverse('admin:catalog_category_toggle_active', args=[obj.pk])
         if obj.is_active:
-            return format_html('<span class="badge badge-success">Active</span>')
-        return format_html('<span class="badge badge-secondary">Inactive</span>')
-    status_badge.short_description = 'Status'
+            return format_html(
+                '<a href="{}" class="btn btn-xs btn-success" style="border-radius: 12px; padding: 2px 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Click to set Inactive">'
+                '<i class="fas fa-toggle-on"></i> Active'
+                '</a>',
+                toggle_url,
+            )
+        return format_html(
+            '<a href="{}" class="btn btn-xs btn-secondary" style="border-radius: 12px; padding: 2px 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Click to set Active">'
+            '<i class="fas fa-toggle-off"></i> Inactive'
+            '</a>',
+            toggle_url,
+        )
+    status_badge.short_description = 'Status (Click to toggle)'
     status_badge.admin_order_field = 'is_active'
 
     def mark_as_active(self, request, queryset):
@@ -143,11 +179,44 @@ class ProductAdmin(admin.ModelAdmin):
         return format_html('<span style="color: #F4B227;">{}</span>', stars)
     rating_stars.short_description = 'Rating'
 
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                '<path:object_id>/toggle-active/',
+                self.admin_site.admin_view(self.toggle_active),
+                name='catalog_product_toggle_active',
+            ),
+        ]
+        return custom_urls + urls
+
+    def toggle_active(self, request, object_id):
+        if not self.has_change_permission(request):
+            raise PermissionDenied
+        obj = self.get_object(request, object_id)
+        if obj is not None:
+            obj.is_active = not obj.is_active
+            obj.save(update_fields=['is_active'])
+            status_text = 'Active' if obj.is_active else 'Inactive'
+            self.message_user(request, f'Product "{obj.name}" is now {status_text}.')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER') or reverse('admin:catalog_product_changelist'))
+
     def status_badge(self, obj):
+        toggle_url = reverse('admin:catalog_product_toggle_active', args=[obj.pk])
         if obj.is_active:
-            return format_html('<span class="badge badge-success">Active</span>')
-        return format_html('<span class="badge badge-secondary">Inactive</span>')
-    status_badge.short_description = 'Status'
+            return format_html(
+                '<a href="{}" class="btn btn-xs btn-success" style="border-radius: 12px; padding: 2px 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Click to set Inactive">'
+                '<i class="fas fa-toggle-on"></i> Active'
+                '</a>',
+                toggle_url,
+            )
+        return format_html(
+            '<a href="{}" class="btn btn-xs btn-secondary" style="border-radius: 12px; padding: 2px 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Click to set Active">'
+            '<i class="fas fa-toggle-off"></i> Inactive'
+            '</a>',
+            toggle_url,
+        )
+    status_badge.short_description = 'Status (Click to toggle)'
     status_badge.admin_order_field = 'is_active'
 
     def mark_as_active(self, request, queryset):

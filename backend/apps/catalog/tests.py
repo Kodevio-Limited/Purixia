@@ -272,4 +272,31 @@ class ActiveStatusTests(APITestCase):
         self.active_prod.refresh_from_db()
         self.assertTrue(self.active_prod.is_active)
 
+    def test_admin_one_click_toggle_views(self):
+        self.client.force_login(self.staff_user)
+
+        # Category toggle
+        cat_url = f'/admin/catalog/category/{self.active_cat.id}/toggle-active/'
+        res = self.client.get(cat_url)
+        self.assertEqual(res.status_code, 302)
+        self.active_cat.refresh_from_db()
+        self.assertFalse(self.active_cat.is_active)
+
+        res = self.client.get(cat_url)
+        self.assertEqual(res.status_code, 302)
+        self.active_cat.refresh_from_db()
+        self.assertTrue(self.active_cat.is_active)
+
+        # Product toggle
+        prod_url = f'/admin/catalog/product/{self.active_prod.id}/toggle-active/'
+        res = self.client.get(prod_url)
+        self.assertEqual(res.status_code, 302)
+        self.active_prod.refresh_from_db()
+        self.assertFalse(self.active_prod.is_active)
+
+        res = self.client.get(prod_url)
+        self.assertEqual(res.status_code, 302)
+        self.active_prod.refresh_from_db()
+        self.assertTrue(self.active_prod.is_active)
+
 

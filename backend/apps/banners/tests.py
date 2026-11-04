@@ -50,3 +50,17 @@ class BannerActiveTests(APITestCase):
         admin.mark_as_active(request, Banner.objects.filter(id=self.active_banner.id))
         self.active_banner.refresh_from_db()
         self.assertTrue(self.active_banner.is_active)
+
+    def test_banner_admin_one_click_toggle(self):
+        self.client.force_login(self.staff_user)
+        toggle_url = f'/admin/banners/banner/{self.active_banner.id}/toggle-active/'
+        res = self.client.get(toggle_url)
+        self.assertEqual(res.status_code, 302)
+        self.active_banner.refresh_from_db()
+        self.assertFalse(self.active_banner.is_active)
+
+        # Toggle back to active
+        res = self.client.get(toggle_url)
+        self.assertEqual(res.status_code, 302)
+        self.active_banner.refresh_from_db()
+        self.assertTrue(self.active_banner.is_active)
